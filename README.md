@@ -278,6 +278,10 @@ L'application est prête pour un usage local. Avant de la mettre en ligne :
 - activez HTTPS. `python manage.py check --deploy` liste les réglages restants : `SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_HSTS_SECONDS` ;
 - pour plusieurs utilisateurs, préférez PostgreSQL à SQLite. Cela corrige aussi la recherche, qui ne tient pas compte des majuscules accentuées sous SQLite.
 
+## Licence
+
+Ce projet est distribué sous licence MIT : voir le fichier [LICENSE](LICENSE).
+
 ## Crédits
 
 - Tutoriel de départ : [Real Python](https://realpython.com/django-flashcards-app/)
