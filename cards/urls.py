@@ -11,6 +11,11 @@ urlpatterns = [
         name="deck-list"
     ),
     path(
+        "stats",
+        views.StatsView.as_view(),
+        name="stats"
+    ),
+    path(
         "decks/new",
         views.DeckCreateView.as_view(),
         name="deck-create"

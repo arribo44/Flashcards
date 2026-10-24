@@ -6,7 +6,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Card, Deck, NUM_BOXES, REVIEW_INTERVALS
+from . import stats
+from .models import Card, Deck, NUM_BOXES, REVIEW_INTERVALS, Review
 
 
 class CardMoveTests(TestCase):
@@ -43,6 +44,36 @@ class CardMoveTests(TestCase):
         card = Card.objects.create(deck=self.deck, question="q", answer="a", box=4)
         card.move(False)
         self.assertTrue(card.is_due)
+
+    def test_move_records_review_kept_after_card_deletion(self):
+        card = Card.objects.create(deck=self.deck, question="q", answer="a")
+        card.move(True)
+        card.move(False)
+        self.assertEqual(
+            list(Review.objects.order_by("pk").values_list("solved", flat=True)), [True, False]
+        )
+        card.delete()
+        self.assertEqual(self.deck.reviews.count(), 2)
+
+
+class StreakTests(TestCase):
+    today = timezone.localdate()
+
+    def days(self, *offsets):
+        return {self.today - timedelta(days=offset) for offset in offsets}
+
+    def test_streak_including_today(self):
+        self.assertEqual(stats.current_streak(self.days(0, 1, 2, 4), self.today), 3)
+
+    def test_streak_still_open_when_today_not_reviewed_yet(self):
+        self.assertEqual(stats.current_streak(self.days(1, 2), self.today), 2)
+
+    def test_streak_broken_by_missed_day(self):
+        self.assertEqual(stats.current_streak(self.days(2, 3), self.today), 0)
+
+    def test_longest_streak(self):
+        self.assertEqual(stats.longest_streak(self.days(0, 3, 4, 5, 6, 9, 10)), 4)
+        self.assertEqual(stats.longest_streak(set()), 0)
 
 
 class AccessTests(TestCase):
@@ -215,6 +246,77 @@ class StudyTests(TestCase):
         response = self.client.get(self.url + "?direction=bogus")
         self.assertEqual(response.context["direction"], "forward")
         self.assertFalse(response.context["reverse"])
+
+
+class CardListTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("alice", password="pw")
+        self.deck = Deck.objects.create(name="Words", language="en", owner=self.user)
+        self.client.force_login(self.user)
+        self.url = reverse("card-list", args=[self.deck.pk])
+
+    def test_search_matches_question_answer_and_example(self):
+        Card.objects.create(deck=self.deck, question="Hectic", answer="Intense")
+        Card.objects.create(deck=self.deck, question="Grave", answer="Tombe")
+        Card.objects.create(deck=self.deck, question="Fancy", answer="Chic", example="A hectic day")
+        response = self.client.get(self.url, {"q": "hectic"})
+        self.assertEqual(
+            sorted(card.question for card in response.context["card_list"]), ["Fancy", "Hectic"]
+        )
+        response = self.client.get(self.url, {"q": "tombe"})
+        self.assertEqual([card.question for card in response.context["card_list"]], ["Grave"])
+
+    def test_list_is_paginated_and_keeps_search(self):
+        Card.objects.bulk_create(
+            Card(deck=self.deck, question=f"word {n}", answer="mot") for n in range(30)
+        )
+        response = self.client.get(self.url, {"q": "word"})
+        self.assertEqual(len(response.context["card_list"]), 25)
+        self.assertContains(response, "?q=word&amp;page=2")
+        response = self.client.get(self.url, {"q": "word", "page": 2})
+        self.assertEqual(len(response.context["card_list"]), 5)
+
+
+class StatsViewTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.alice = User.objects.create_user("alice", password="pw")
+        self.bob = User.objects.create_user("bob", password="pw")
+        self.deck = Deck.objects.create(name="Words", language="en", owner=self.alice)
+        bob_deck = Deck.objects.create(name="Bob", language="es", owner=self.bob)
+        now = timezone.now()
+        for days_ago, solved in [(0, True), (0, False), (1, True), (2, True), (5, True)]:
+            Review.objects.create(
+                deck=self.deck, solved=solved, reviewed_at=now - timedelta(days=days_ago)
+            )
+        Review.objects.create(deck=bob_deck, solved=False, reviewed_at=now)
+        Card.objects.create(deck=self.deck, question="q", answer="a", box=NUM_BOXES)
+
+    def test_stats_only_count_own_reviews(self):
+        self.client.force_login(self.alice)
+        context = self.client.get(reverse("stats")).context
+        self.assertEqual(context["streak"], 3)
+        self.assertEqual(context["recent_total"], 5)
+        self.assertEqual(context["success_rate"], 80)
+        self.assertEqual(context["mastered"], 1)
+        self.assertEqual(context["daily"][-1], {
+            "date": timezone.localdate(), "total": 2, "solved": 1, "height": 100, "is_today": True,
+        })
+        self.assertEqual(context["decks"][0].box_counts, [0, 0, 0, 0, 1])
+
+    def test_new_user_sees_empty_stats(self):
+        self.client.force_login(self.bob)
+        self.bob.decks.all().delete()
+        response = self.client.get(reverse("stats"))
+        self.assertEqual(response.context["success_rate"], None)
+        self.assertContains(response, "Aucune révision ces 14 derniers jours.")
+
+    def test_deck_list_shows_streak(self):
+        self.client.force_login(self.alice)
+        self.assertContains(self.client.get(reverse("deck-list")), "<strong>3 jours</strong>", html=True)
+
+    def test_stats_require_login(self):
+        self.assertEqual(self.client.get(reverse("stats")).status_code, 302)
 
 
 class ImportTests(TestCase):

@@ -13,12 +13,39 @@
     <a href="{% url 'card-import' deck.pk %}" role="button">
         📥 Importer un CSV
     </a>
+    <form method="get" role="search" class="search">
+        <input type="search" name="q" value="{{ query }}"
+               placeholder="Rechercher une question, une réponse, un exemple…"
+               aria-label="Rechercher">
+        <input type="submit" value="🔍 Rechercher">
+    </form>
+    {% if query %}
+        <p>
+            {{ paginator.count }} résultat{{ paginator.count | pluralize }} pour « {{ query }} ».
+            <a href="{% url 'card-list' deck.pk %}">Effacer la recherche</a>
+        </p>
+    {% endif %}
     {% for card in card_list %}
-        {% ifchanged %}
+        {% ifchanged card.box %}
             <h3>🗃 Boîte {{ card.box }}</h3>
         {% endifchanged %}
         {% include "cards/card.html" %}
     {% empty %}
-        <p>Ce paquet est vide.</p>
+        {% if query %}
+            <p>Aucune carte ne correspond à cette recherche.</p>
+        {% else %}
+            <p>Ce paquet est vide.</p>
+        {% endif %}
     {% endfor %}
+    {% if is_paginated %}
+        <nav class="pagination" aria-label="Pages">
+            {% if page_obj.has_previous %}
+                <a href="?{% if query %}q={{ query | urlencode }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Précédente</a>
+            {% endif %}
+            <span>Page {{ page_obj.number }} sur {{ paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{% if query %}q={{ query | urlencode }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Suivante →</a>
+            {% endif %}
+        </nav>
+    {% endif %}
 {% endblock content %}

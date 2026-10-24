@@ -4,6 +4,9 @@
 
 {% block content %}
     <h2>Mes paquets</h2>
+    {% if streak %}
+        <p>🔥 Série en cours : <strong>{{ streak }} jour{{ streak | pluralize }}</strong> de révision d'affilée.</p>
+    {% endif %}
     <a href="{% url 'deck-create' %}" role="button">
         ✨ Nouveau paquet
     </a>

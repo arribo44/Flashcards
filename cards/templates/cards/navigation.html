@@ -5,6 +5,7 @@
 <nav>
     {% if user.is_authenticated %}
         <a href="{% url 'deck-list' %}">📚 Mes paquets</a>
+        <a href="{% url 'stats' %}">📊 Statistiques</a>
         {% if deck.pk %}
             <a href="{% url 'card-list' deck.pk %}">🗂 {{ deck.name }}</a>
             <a href="{% url 'study' deck.pk %}">🎯 Réviser</a>

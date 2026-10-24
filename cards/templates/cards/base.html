@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Flashcards</title>
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" href="{% static 'cards/simple.min.css' %}">
     <script src="{% static 'cards/flashcards.js' %}" defer></script>
 
     <style>
@@ -90,6 +90,24 @@
             margin-top: 0;
         }
 
+        .search {
+            display: flex;
+            gap: 1em;
+            margin-top: 1em;
+        }
+
+        .search input[type="submit"] {
+            width: auto;
+            margin-top: 0;
+        }
+
+        nav.pagination {
+            display: flex;
+            gap: 1em;
+            justify-content: center;
+            align-items: center;
+        }
+
         .shortcuts {
             color: var(--text-light);
         }
@@ -101,6 +119,7 @@
             }
         }
     </style>
+    {% block extra_head %}{% endblock extra_head %}
 </head>
 
 <body>

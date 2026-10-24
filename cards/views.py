@@ -9,6 +9,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Min, Q
 from django.urls import reverse, reverse_lazy
+from datetime import timedelta
+
 from django.utils import timezone
 
 from django.shortcuts import get_object_or_404, redirect
@@ -18,10 +20,12 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     FormView,
+    TemplateView,
     UpdateView,
 )
 
-from .models import Card, Deck
+from . import stats
+from .models import BOXES, Card, Deck, Review
 from .forms import CardCheckForm, CardImportForm
 
 
@@ -57,6 +61,64 @@ class DeckListView(LoginRequiredMixin, ListView):
                 "cards", filter=Q(cards__due_date__lte=timezone.localdate())
             ),
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        days = stats.review_days(Review.objects.filter(deck__owner=self.request.user))
+        context["streak"] = stats.current_streak(days, timezone.localdate())
+        return context
+
+
+class StatsView(LoginRequiredMixin, TemplateView):
+    template_name = "cards/stats.html"
+    CHART_DAYS = 14
+    SUCCESS_RATE_DAYS = 30
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = timezone.localdate()
+        reviews = Review.objects.filter(deck__owner=self.request.user)
+        cards = Card.objects.filter(deck__owner=self.request.user)
+
+        days = stats.review_days(reviews)
+        context["streak"] = stats.current_streak(days, today)
+        context["best_streak"] = stats.longest_streak(days)
+        context["reviewed_today"] = today in days
+
+        recent = reviews.filter(
+            reviewed_at__date__gt=today - timedelta(days=self.SUCCESS_RATE_DAYS)
+        ).aggregate(total=Count("id"), solved=Count("id", filter=Q(solved=True)))
+        context["recent_total"] = recent["total"]
+        context["success_rate"] = (
+            round(100 * recent["solved"] / recent["total"]) if recent["total"] else None
+        )
+        context["success_rate_days"] = self.SUCCESS_RATE_DAYS
+
+        context["due_today"] = cards.filter(due_date__lte=today).count()
+        context["mastered"] = cards.filter(box=BOXES[-1]).count()
+        context["card_total"] = cards.count()
+
+        daily = stats.daily_counts(reviews, today, self.CHART_DAYS)
+        busiest = max(day["total"] for day in daily)
+        for day in daily:
+            day["height"] = round(100 * day["total"] / busiest) if busiest else 0
+            day["is_today"] = day["date"] == today
+        context["daily"] = daily
+        context["daily_total"] = sum(day["total"] for day in daily)
+        context["busiest"] = busiest
+
+        decks = self.request.user.decks.annotate(
+            due_count=Count("cards", filter=Q(cards__due_date__lte=today)),
+            **{
+                f"box_{box}": Count("cards", filter=Q(cards__box=box))
+                for box in BOXES
+            },
+        )
+        for deck in decks:
+            deck.box_counts = [getattr(deck, f"box_{box}") for box in BOXES]
+        context["decks"] = decks
+        context["boxes"] = BOXES
+        return context
 
 
 class DeckCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
@@ -111,9 +173,23 @@ class UserDeckMixin(LoginRequiredMixin):
 
 class CardListView(UserDeckMixin, ListView):
     model = Card
+    paginate_by = 25
 
     def get_queryset(self):
-        return self.deck.cards.order_by("box", "-date_created")
+        cards = self.deck.cards.order_by("box", "-date_created")
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            cards = cards.filter(
+                Q(question__icontains=query)
+                | Q(answer__icontains=query)
+                | Q(example__icontains=query)
+            )
+        return cards
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["query"] = self.request.GET.get("q", "").strip()
+        return context
 
 
 class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):

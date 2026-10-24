@@ -88,5 +88,33 @@ class Card(models.Model):
             days=REVIEW_INTERVALS[self.box]
         )
         self.save()
+        Review.objects.create(
+            deck_id=self.deck_id, card=self, solved=solved, reviewed_at=self.last_reviewed
+        )
 
         return self
+
+
+class Review(models.Model):
+    """One answer given while studying, kept for statistics and streaks."""
+
+    deck = models.ForeignKey(
+        Deck,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="paquet",
+    )
+    # Keep the history when a card is deleted, so past streaks don't change
+    card = models.ForeignKey(
+        Card,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reviews",
+        verbose_name="carte",
+    )
+    solved = models.BooleanField("réussie")
+    reviewed_at = models.DateTimeField("date", default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ["-reviewed_at"]
+        verbose_name = "révision"
