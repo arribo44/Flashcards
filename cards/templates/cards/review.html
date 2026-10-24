@@ -10,6 +10,14 @@
             <a href="?direction={{ key }}">{{ label }}</a>
         {% endif %}
     {% endfor %}
+    <br>
+    {% for key, label in answer_modes.items %}
+        {% if key == answer_mode %}
+            <mark>{{ label }}</mark>
+        {% else %}
+            <a href="?answer_mode={{ key }}">{{ label }}</a>
+        {% endif %}
+    {% endfor %}
 </p>
 <mark>{{ object_list | length }}</mark> carte{{ object_list | pluralize }} à réviser aujourd'hui.
 <hr>
@@ -18,25 +26,9 @@
     <p class="shortcuts">
         <small>
             Raccourcis : <kbd>Espace</kbd> afficher la réponse ·
-            <kbd>→</kbd> je sais · <kbd>←</kbd> je ne sais pas
+            <kbd>→</kbd> je sais · <kbd>←</kbd> je ne sais pas · <kbd>P</kbd> écouter
         </small>
     </p>
-    <script>
-        document.addEventListener("keydown", (event) => {
-            if (event.target.closest("a, button, input, select, summary, textarea")) {
-                return;
-            }
-            const answer = document.querySelector("details.answer");
-            if (event.key === " ") {
-                event.preventDefault();
-                answer.open = true;
-            } else if (answer.open && ["ArrowRight", "ArrowLeft"].includes(event.key)) {
-                event.preventDefault();
-                const solved = event.key === "ArrowRight";
-                answer.querySelector(`form[data-solved="${solved}"]`).requestSubmit();
-            }
-        });
-    </script>
 {% else %}
     <p>
         🎉 Plus rien à réviser ici aujourd'hui.

@@ -31,6 +31,11 @@ STUDY_DIRECTIONS = {
     "mixed": "Mélangé",
 }
 
+ANSWER_MODES = {
+    "reveal": "Révéler la réponse",
+    "type": "Taper la réponse",
+}
+
 
 class SignUpView(CreateView):
     form_class = UserCreationForm
@@ -113,7 +118,7 @@ class CardListView(UserDeckMixin, ListView):
 
 class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):
     model = Card
-    fields = ["question", "answer", "box"]
+    fields = ["question", "answer", "example", "box"]
     success_message = "Carte « %(question)s » ajoutée."
 
     def form_valid(self, form):
@@ -126,7 +131,7 @@ class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):
 
 class CardUpdateView(SuccessMessageMixin, UserDeckMixin, UpdateView):
     model = Card
-    fields = ["question", "answer", "box"]
+    fields = ["question", "answer", "example", "box"]
     success_message = "Carte « %(question)s » enregistrée."
 
     def get_queryset(self):
@@ -159,10 +164,12 @@ class CardImportView(UserDeckMixin, FormView):
         rows = form.cleaned_data["csv_file"]
         known_questions = set(self.deck.cards.values_list("question", flat=True))
         new_cards = []
-        for question, answer in rows:
+        for question, answer, example in rows:
             if question not in known_questions:
                 known_questions.add(question)
-                new_cards.append(Card(deck=self.deck, question=question, answer=answer))
+                new_cards.append(Card(
+                    deck=self.deck, question=question, answer=answer, example=example
+                ))
         Card.objects.bulk_create(new_cards)
 
         imported = len(new_cards)
@@ -187,17 +194,21 @@ class StudyView(UserDeckMixin, ListView):
     def get_queryset(self):
         return self.get_cards().filter(due_date__lte=timezone.localdate())
 
-    def get_direction(self):
-        direction = self.request.GET.get("direction")
-        if direction in STUDY_DIRECTIONS:
-            self.request.session["study_direction"] = direction
-        return self.request.session.get("study_direction", "forward")
+    def get_study_option(self, name, choices):
+        """Read an option from the query string, remembered in the session."""
+        session_key = f"study_{name}"
+        value = self.request.GET.get(name)
+        if value in choices:
+            self.request.session[session_key] = value
+        return self.request.session.get(session_key, next(iter(choices)))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        direction = self.get_direction()
+        direction = self.get_study_option("direction", STUDY_DIRECTIONS)
         context["direction"] = direction
         context["directions"] = STUDY_DIRECTIONS
+        context["answer_mode"] = self.get_study_option("answer_mode", ANSWER_MODES)
+        context["answer_modes"] = ANSWER_MODES
         if self.object_list:
             context["check_card"] = random.choice(self.object_list)
             context["reverse"] = direction == "reverse" or (

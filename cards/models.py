@@ -18,6 +18,9 @@ class Deck(models.Model):
         ENGLISH = "en", "Anglais"
         SPANISH = "es", "Espagnol"
 
+    # Voices used by the browser's speech synthesis to read the cards
+    SPEECH_LANGS = {Language.ENGLISH: "en-GB", Language.SPANISH: "es-ES"}
+
     name = models.CharField("nom", max_length=100)
     language = models.CharField("langue", max_length=2, choices=Language.choices)
     owner = models.ForeignKey(
@@ -35,6 +38,10 @@ class Deck(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def speech_lang(self):
+        return self.SPEECH_LANGS.get(self.language, self.language)
+
 
 class Card(models.Model):
     deck = models.ForeignKey(
@@ -45,6 +52,12 @@ class Card(models.Model):
     )
     question = models.CharField("question", max_length=100)
     answer = models.CharField("réponse", max_length=100)
+    example = models.CharField(
+        "exemple",
+        max_length=200,
+        blank=True,
+        help_text="Une phrase qui utilise la question en contexte (facultatif).",
+    )
     box = models.IntegerField(
         "boîte",
         choices=zip(BOXES, BOXES),

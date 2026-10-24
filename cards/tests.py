@@ -113,9 +113,9 @@ class AccessTests(TestCase):
         self.assertEqual(deck.owner, self.bob)
         self.client.post(
             reverse("card-create", args=[deck.pk]),
-            {"question": "comer", "answer": "manger", "box": 1},
+            {"question": "comer", "answer": "manger", "example": "Vamos a comer.", "box": 1},
         )
-        self.assertTrue(deck.cards.filter(question="comer").exists())
+        self.assertEqual(deck.cards.get(question="comer").example, "Vamos a comer.")
 
     def test_cannot_delete_another_users_card_or_deck(self):
         self.client.force_login(self.bob)
@@ -191,6 +191,25 @@ class StudyTests(TestCase):
         self.assertIn('data-solved="true"', details)
         self.assertIn('data-solved="false"', details)
 
+    def test_type_mode_expects_the_hidden_side(self):
+        self.add_card("hectic", "intense")
+        response = self.client.get(self.url + "?answer_mode=type&direction=forward")
+        self.assertContains(response, 'data-expected="intense"')
+        response = self.client.get(self.url + "?direction=reverse")
+        self.assertEqual(response.context["answer_mode"], "type")
+        self.assertContains(response, 'data-expected="hectic"')
+
+    def test_reveal_mode_has_no_typing_form(self):
+        self.add_card("hectic", "intense")
+        response = self.client.get(self.url)
+        self.assertEqual(response.context["answer_mode"], "reveal")
+        self.assertNotContains(response, 'class="type-answer"')
+
+    def test_speak_button_uses_deck_voice(self):
+        self.add_card("hectic", "intense")
+        response = self.client.get(reverse("card-list", args=[self.deck.pk]))
+        self.assertContains(response, 'data-speak="hectic" data-lang="en-GB"')
+
     def test_unknown_direction_is_ignored(self):
         self.add_card("hectic", "intense")
         response = self.client.get(self.url + "?direction=bogus")
@@ -215,6 +234,13 @@ class ImportTests(TestCase):
     def test_semicolon_file_with_header(self):
         self.upload("question;réponse\nHectic;Intense\nTo sprinkle;Saupoudrer\n")
         self.assertEqual(self.cards(), [("Hectic", "Intense", 1), ("To sprinkle", "Saupoudrer", 1)])
+
+    def test_optional_example_column(self):
+        self.upload("Hectic;Intense;It's been a hectic week.\nGrave;Tombe\n")
+        self.assertEqual(
+            list(self.deck.cards.order_by("pk").values_list("example", flat=True)),
+            ["It's been a hectic week.", ""],
+        )
 
     def test_comma_file_with_quotes_and_blank_lines(self):
         self.upload('Fancy,Sophistiqué\n\n"To jiggle","Se trémousser, gigoter"\n')
@@ -241,9 +267,13 @@ class ImportTests(TestCase):
         self.assertContains(response, "Ligne 2 : il faut une question et une réponse.")
 
     def test_too_long_field_is_rejected(self):
-        response = self.upload("Hectic;" + "x" * 101 + "\n")
+        response = self.upload("Hectic;" + "x" * 101 + ";" + "y" * 201 + "\nGrave;Tombe;" + "z" * 200)
         self.assertEqual(self.deck.cards.count(), 0)
-        self.assertContains(response, "Ligne 1 : 100 caractères maximum par champ.")
+        self.assertContains(
+            response,
+            "Ligne 1 : trop long pour réponse (100 caractères max.), exemple (200 caractères max.).",
+        )
+        self.assertNotContains(response, "Ligne 2")
 
     def test_empty_file_is_rejected(self):
         response = self.upload("question;réponse\n")

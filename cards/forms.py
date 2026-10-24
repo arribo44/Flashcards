@@ -20,28 +20,25 @@ class CardImportForm(forms.Form):
     csv_file = forms.FileField(
         label="Fichier CSV",
         help_text=(
-            "Deux colonnes : question puis réponse. Séparateur virgule, "
-            "point-virgule ou tabulation. Une ligne d'en-tête « question » "
-            "est ignorée."
+            "Colonnes : question, réponse et, si vous voulez, un exemple. "
+            "Séparateur virgule, point-virgule ou tabulation. Une ligne "
+            "d'en-tête « question » est ignorée."
         ),
     )
 
     def clean_csv_file(self):
-        """Return the file's cards as a list of (question, answer) pairs."""
+        """Return the file's cards as a list of (question, answer, example) tuples."""
         uploaded = self.cleaned_data["csv_file"]
         if uploaded.size > self.MAX_FILE_SIZE:
             raise forms.ValidationError("Le fichier dépasse 1 Mo.")
 
         text = self.decode(uploaded.read())
-        try:
-            dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
-        except csv.Error:
-            dialect = csv.excel
+        delimiter = self.guess_delimiter(text)
 
-        max_length = Card._meta.get_field("question").max_length
+        fields = [Card._meta.get_field(name) for name in ("question", "answer", "example")]
         cards = []
         errors = []
-        for line_num, row in enumerate(csv.reader(io.StringIO(text), dialect), start=1):
+        for line_num, row in enumerate(csv.reader(io.StringIO(text), delimiter=delimiter), start=1):
             cells = [cell.strip() for cell in row]
             if not any(cells):
                 continue
@@ -49,10 +46,17 @@ class CardImportForm(forms.Form):
                 continue
             if len(cells) < 2 or not cells[0] or not cells[1]:
                 errors.append(f"Ligne {line_num} : il faut une question et une réponse.")
-            elif len(cells[0]) > max_length or len(cells[1]) > max_length:
-                errors.append(f"Ligne {line_num} : {max_length} caractères maximum par champ.")
+                continue
+            values = (cells + [""])[:3]
+            too_long = [
+                f"{field.verbose_name} ({field.max_length} caractères max.)"
+                for field, value in zip(fields, values)
+                if len(value) > field.max_length
+            ]
+            if too_long:
+                errors.append(f"Ligne {line_num} : trop long pour {', '.join(too_long)}.")
             else:
-                cards.append((cells[0], cells[1]))
+                cards.append(tuple(values))
 
         if errors:
             hidden = len(errors) - self.MAX_ERRORS_SHOWN
@@ -62,6 +66,13 @@ class CardImportForm(forms.Form):
         if not cards:
             raise forms.ValidationError("Le fichier ne contient aucune carte.")
         return cards
+
+    @staticmethod
+    def guess_delimiter(text):
+        # csv.Sniffer gives up when rows have different lengths, which happens
+        # with the optional example column: count delimiters on the first line
+        first_line = next((line for line in text.splitlines() if line.strip()), "")
+        return max(";\t,", key=first_line.count)
 
     @staticmethod
     def decode(raw):

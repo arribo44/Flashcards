@@ -11,9 +11,9 @@
         paquet sont ignorées. Si une ligne est invalide, rien n'est importé.
     </p>
     <p>Exemple :</p>
-    <pre>question;réponse
-Hectic;Intense
-To sprinkle;Saupoudrer</pre>
+    <pre>question;réponse;exemple
+Hectic;Intense;It's been a hectic week.
+To sprinkle;Saupoudrer;</pre>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

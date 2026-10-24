@@ -14,4 +14,4 @@ class DeckAdmin(admin.ModelAdmin):
 class CardAdmin(admin.ModelAdmin):
     list_display = ["question", "answer", "box", "deck"]
     list_filter = ["box", "deck__language", "deck"]
-    search_fields = ["question", "answer"]
+    search_fields = ["question", "answer", "example"]

@@ -6,10 +6,19 @@
     {% if check_card and reverse %}
         <h4>{{ card.answer }}</h4>
     {% else %}
-        <h4>{{ card.question }}</h4>
+        <h4>
+            {{ card.question }}
+            {% include "cards/speak_button.html" with text=card.question %}
+        </h4>
     {% endif %}
     {% if not check_card %}
         <p>{{ card.answer }}</p>
+        {% if card.example %}
+            <p>
+                <em>{{ card.example }}</em>
+                {% include "cards/speak_button.html" with text=card.example %}
+            </p>
+        {% endif %}
         <p>
             <small>
                 {% if card.is_due %}
@@ -27,9 +36,31 @@
             🗑 Supprimer
         </a>
     {% else %}
+        {% if answer_mode == "type" %}
+            <form class="type-answer" hidden
+                  data-expected="{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}">
+                <input type="text" name="typed" placeholder="Votre réponse" aria-label="Votre réponse"
+                       autocomplete="off" autocapitalize="off" spellcheck="false">
+                <input type="submit" value="Vérifier">
+            </form>
+            <p class="verdict" hidden></p>
+        {% endif %}
         <details class="answer">
             <summary>Afficher la réponse</summary>
-            <p>{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}</p>
+            {% if reverse %}
+                <p>
+                    {{ card.question }}
+                    {% include "cards/speak_button.html" with text=card.question %}
+                </p>
+            {% else %}
+                <p>{{ card.answer }}</p>
+            {% endif %}
+            {% if card.example %}
+                <p>
+                    <em>{{ card.example }}</em>
+                    {% include "cards/speak_button.html" with text=card.example %}
+                </p>
+            {% endif %}
             <hr>
             <div class="answer-buttons">
                 {% include "cards/card_check_form.html" with solved=True %}
