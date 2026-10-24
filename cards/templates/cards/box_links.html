@@ -1,10 +1,8 @@
 <!-- cards/templates/box_links.html -->
 
-{% load humanize %}
-
 {% for box in boxes %}
     <a href="{% url 'box' deck_pk=deck.pk box_num=box.number %}"
-       title="{{ box.due_count }} due today / {{ box.card_count }} in box">
-        🗃 {{ box.number | ordinal }} Box <mark>{{ box.due_count }}</mark>/{{ box.card_count }}
+       title="{{ box.due_count }} à réviser aujourd'hui / {{ box.card_count }} dans la boîte">
+        🗃 Boîte {{ box.number }} <mark>{{ box.due_count }}</mark>/{{ box.card_count }}
     </a>
 {% endfor %}

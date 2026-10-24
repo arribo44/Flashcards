@@ -3,20 +3,20 @@
 {% extends "cards/base.html" %}
 
 {% block content %}
-    <h2>My Decks</h2>
+    <h2>Mes paquets</h2>
     <a href="{% url 'deck-create' %}" role="button">
-        ✨ Create New Deck
+        ✨ Nouveau paquet
     </a>
     {% for deck in deck_list %}
         <article>
             <h4>{{ deck.name }}</h4>
-            <p>{{ deck.get_language_display }} · {{ deck.card_count }} card{{ deck.card_count | pluralize }}</p>
+            <p>{{ deck.get_language_display }} · {{ deck.card_count }} carte{{ deck.card_count | pluralize }}</p>
             <hr>
-            <a href="{% url 'study' deck.pk %}" role="button">🎯 Study ({{ deck.due_count }} due)</a>
-            <a href="{% url 'card-list' deck.pk %}" role="button">🗂 Cards</a>
-            <a href="{% url 'deck-update' deck.pk %}" role="button">✏️ Edit Deck</a>
+            <a href="{% url 'study' deck.pk %}" role="button">🎯 Réviser ({{ deck.due_count }} à revoir)</a>
+            <a href="{% url 'card-list' deck.pk %}" role="button">🗂 Cartes</a>
+            <a href="{% url 'deck-update' deck.pk %}" role="button">✏️ Modifier</a>
         </article>
     {% empty %}
-        <p>You have no deck yet. Create one to start adding cards.</p>
+        <p>Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des cartes.</p>
     {% endfor %}
 {% endblock content %}

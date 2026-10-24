@@ -1,10 +1,9 @@
 <!-- templates/cards/box.html -->
 
 {% extends "cards/base.html" %}
-{% load humanize %}
 
 {% block content %}
-    <h2>🗃 {{ box_number | ordinal }} Box</h2>
-    <p>{{ box_total }} card{{ box_total | pluralize }} in this box.</p>
+    <h2>🗃 Boîte {{ box_number }}</h2>
+    <p>{{ box_total }} carte{{ box_total | pluralize }} dans cette boîte.</p>
     {% include "cards/review.html" %}
 {% endblock content %}

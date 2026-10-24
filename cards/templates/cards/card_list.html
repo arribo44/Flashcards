@@ -1,7 +1,6 @@
 <!-- cards/templates/cards/card_list.html -->
 
 {% extends "cards/base.html" %}
-{% load humanize %}
 
 {% block content %}
     <h2>
@@ -9,14 +8,14 @@
     </h2>
     <p>{{ deck.get_language_display }}</p>
     <a href="{% url 'card-create' deck.pk %}" role="button">
-        ✨ Create New Card
+        ✨ Nouvelle carte
     </a>
     {% for card in card_list %}
         {% ifchanged %}
-            <h3>🗃 {{ card.box | ordinal }} Box</h3>
+            <h3>🗃 Boîte {{ card.box }}</h3>
         {% endifchanged %}
         {% include "cards/card.html" %}
     {% empty %}
-        <p>This deck is empty.</p>
+        <p>Ce paquet est vide.</p>
     {% endfor %}
 {% endblock content %}

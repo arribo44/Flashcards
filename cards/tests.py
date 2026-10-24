@@ -163,6 +163,13 @@ class StudyTests(TestCase):
         response = self.client.get(self.url)
         self.assertTrue(response.context["reverse"])
 
+    def test_answer_buttons_are_hidden_until_reveal(self):
+        self.add_card("hectic", "intense")
+        html = self.client.get(self.url).content.decode()
+        details = html[html.index('<details class="answer">'):html.index("</details>")]
+        self.assertIn('data-solved="true"', details)
+        self.assertIn('data-solved="false"', details)
+
     def test_unknown_direction_is_ignored(self):
         self.add_card("hectic", "intense")
         response = self.client.get(self.url + "?direction=bogus")

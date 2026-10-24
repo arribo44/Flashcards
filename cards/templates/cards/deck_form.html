@@ -4,16 +4,16 @@
 
 {% block content %}
     {% if deck %}
-        <h2>✏️ Edit Deck</h2>
+        <h2>✏️ Modifier le paquet</h2>
     {% else %}
-        <h2>✨ Create New Deck</h2>
+        <h2>✨ Nouveau paquet</h2>
     {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Save Deck">
+        <input type="submit" value="Enregistrer">
     </form>
     <a href="{% url 'deck-list' %}">
-        Cancel
+        Annuler
     </a>
 {% endblock %}

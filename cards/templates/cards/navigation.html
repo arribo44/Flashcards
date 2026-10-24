@@ -4,18 +4,18 @@
 
 <nav>
     {% if user.is_authenticated %}
-        <a href="{% url 'deck-list' %}">📚 My Decks</a>
+        <a href="{% url 'deck-list' %}">📚 Mes paquets</a>
         {% if deck.pk %}
             <a href="{% url 'card-list' deck.pk %}">🗂 {{ deck.name }}</a>
-            <a href="{% url 'study' deck.pk %}">🎯 Review</a>
+            <a href="{% url 'study' deck.pk %}">🎯 Réviser</a>
             {% boxes_as_links deck %}
         {% endif %}
         <form method="post" action="{% url 'logout' %}" class="logout">
             {% csrf_token %}
-            <button type="submit">Log out ({{ user.username }})</button>
+            <button type="submit">Se déconnecter ({{ user.username }})</button>
         </form>
     {% else %}
-        <a href="{% url 'login' %}">Log in</a>
-        <a href="{% url 'signup' %}">Sign up</a>
+        <a href="{% url 'login' %}">Se connecter</a>
+        <a href="{% url 'signup' %}">Créer un compte</a>
     {% endif %}
 </nav>

@@ -11,13 +11,35 @@
         {% endif %}
     {% endfor %}
 </p>
-<mark>{{ object_list | length }}</mark> card{{ object_list | pluralize }} due today.
+<mark>{{ object_list | length }}</mark> carte{{ object_list | pluralize }} à réviser aujourd'hui.
 <hr>
 {% if check_card %}
     {% include "cards/card.html" with card=check_card %}
+    <p class="shortcuts">
+        <small>
+            Raccourcis : <kbd>Espace</kbd> afficher la réponse ·
+            <kbd>→</kbd> je sais · <kbd>←</kbd> je ne sais pas
+        </small>
+    </p>
+    <script>
+        document.addEventListener("keydown", (event) => {
+            if (event.target.closest("a, button, input, select, summary, textarea")) {
+                return;
+            }
+            const answer = document.querySelector("details.answer");
+            if (event.key === " ") {
+                event.preventDefault();
+                answer.open = true;
+            } else if (answer.open && ["ArrowRight", "ArrowLeft"].includes(event.key)) {
+                event.preventDefault();
+                const solved = event.key === "ArrowRight";
+                answer.querySelector(`form[data-solved="${solved}"]`).requestSubmit();
+            }
+        });
+    </script>
 {% else %}
     <p>
-        🎉 Nothing left to review here today.
-        {% if next_due %}Next review: {{ next_due | naturalday }}.{% endif %}
+        🎉 Plus rien à réviser ici aujourd'hui.
+        {% if next_due %}Prochaine révision : {{ next_due | naturalday }}.{% endif %}
     </p>
 {% endif %}

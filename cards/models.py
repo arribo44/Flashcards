@@ -15,20 +15,22 @@ REVIEW_INTERVALS = {1: 0, 2: 1, 3: 3, 4: 7, 5: 14}
 
 class Deck(models.Model):
     class Language(models.TextChoices):
-        ENGLISH = "en", "English"
-        SPANISH = "es", "Spanish"
+        ENGLISH = "en", "Anglais"
+        SPANISH = "es", "Espagnol"
 
-    name = models.CharField(max_length=100)
-    language = models.CharField(max_length=2, choices=Language.choices)
+    name = models.CharField("nom", max_length=100)
+    language = models.CharField("langue", max_length=2, choices=Language.choices)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="decks",
+        verbose_name="propriétaire",
     )
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField("créé le", auto_now_add=True)
 
     class Meta:
         ordering = ["name"]
+        verbose_name = "paquet"
 
     def __str__(self):
         return self.name
@@ -39,16 +41,21 @@ class Card(models.Model):
         Deck,
         on_delete=models.CASCADE,
         related_name="cards",
+        verbose_name="paquet",
     )
-    question = models.CharField(max_length=100)
-    answer = models.CharField(max_length=100)
+    question = models.CharField("question", max_length=100)
+    answer = models.CharField("réponse", max_length=100)
     box = models.IntegerField(
+        "boîte",
         choices=zip(BOXES, BOXES),
         default=BOXES[0],
     )
-    due_date = models.DateField(default=timezone.localdate)
-    last_reviewed = models.DateTimeField(null=True, blank=True)
-    date_created = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateField("prochaine révision", default=timezone.localdate)
+    last_reviewed = models.DateTimeField("dernière révision", null=True, blank=True)
+    date_created = models.DateTimeField("créée le", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "carte"
 
     def __str__(self):
         return self.question

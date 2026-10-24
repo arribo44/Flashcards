@@ -22,9 +22,9 @@ from .forms import CardCheckForm
 
 
 STUDY_DIRECTIONS = {
-    "forward": "Question → Answer",
-    "reverse": "Answer → Question",
-    "mixed": "Mixed",
+    "forward": "Question → Réponse",
+    "reverse": "Réponse → Question",
+    "mixed": "Mélangé",
 }
 
 

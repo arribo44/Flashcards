@@ -13,23 +13,25 @@
         <p>
             <small>
                 {% if card.is_due %}
-                    Due today
+                    À réviser aujourd'hui
                 {% else %}
-                    Next review: {{ card.due_date | naturalday }}
+                    Prochaine révision : {{ card.due_date | naturalday }}
                 {% endif %}
             </small>
         </p>
         <hr>
         <a href="{% url 'card-update' card.deck_id card.id %}" role="button">
-            ✏️ Edit Card
+            ✏️ Modifier
         </a>
     {% else %}
-        <details>
-            <summary>Reveal Answer</summary>
+        <details class="answer">
+            <summary>Afficher la réponse</summary>
             <p>{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}</p>
+            <hr>
+            <div class="answer-buttons">
+                {% include "cards/card_check_form.html" with solved=True %}
+                {% include "cards/card_check_form.html" with solved=False %}
+            </div>
         </details>
-        <hr>
-        {% include "cards/card_check_form.html" with solved=True %}
-        {% include "cards/card_check_form.html" with solved=False %}
     {% endif %}
 </article>

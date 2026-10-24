@@ -3,12 +3,12 @@
 {% extends "cards/base.html" %}
 
 {% block content %}
-    <h2>Log in</h2>
+    <h2>Connexion</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="hidden" name="next" value="{{ next }}">
-        <input type="submit" value="Log in">
+        <input type="submit" value="Se connecter">
     </form>
-    <p>No account yet? <a href="{% url 'signup' %}">Sign up</a></p>
+    <p>Pas encore de compte ? <a href="{% url 'signup' %}">Créer un compte</a></p>
 {% endblock %}

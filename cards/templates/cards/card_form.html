@@ -4,16 +4,16 @@
 
 {% block content %}
     {% if card %}
-        <h2>✏️ Edit Card</h2>
+        <h2>✏️ Modifier la carte</h2>
     {% else %}
-        <h2>✨ Create New Card</h2>
+        <h2>✨ Nouvelle carte</h2>
     {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Save Card">
+        <input type="submit" value="Enregistrer">
     </form>
     <a href="{% url 'card-list' deck.pk %}">
-        Cancel
+        Annuler
     </a>
 {% endblock %}
