@@ -3,6 +3,18 @@
 {% load cards_tags %}
 
 <nav>
-    <a href="{% url 'card-list' %}">🗂 All Cards</a>
-    {% boxes_as_links %}
+    {% if user.is_authenticated %}
+        <a href="{% url 'deck-list' %}">📚 My Decks</a>
+        {% if deck.pk %}
+            <a href="{% url 'card-list' deck.pk %}">🗂 {{ deck.name }}</a>
+            {% boxes_as_links deck %}
+        {% endif %}
+        <form method="post" action="{% url 'logout' %}" class="logout">
+            {% csrf_token %}
+            <button type="submit">Log out ({{ user.username }})</button>
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}">Log in</a>
+        <a href="{% url 'signup' %}">Sign up</a>
+    {% endif %}
 </nav>

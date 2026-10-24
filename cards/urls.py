@@ -1,28 +1,42 @@
 # cards/urls.py
 
 from django.urls import path
-# from django.views.generic import TemplateView
 
 from . import views
 
 urlpatterns = [
     path(
         "",
+        views.DeckListView.as_view(),
+        name="deck-list"
+    ),
+    path(
+        "decks/new",
+        views.DeckCreateView.as_view(),
+        name="deck-create"
+    ),
+    path(
+        "decks/<int:pk>/edit",
+        views.DeckUpdateView.as_view(),
+        name="deck-update"
+    ),
+    path(
+        "decks/<int:deck_pk>/",
         views.CardListView.as_view(),
         name="card-list"
     ),
     path(
-        "new",
+        "decks/<int:deck_pk>/new",
         views.CardCreateView.as_view(),
         name="card-create"
     ),
     path(
-        "edit/<int:pk>",
+        "decks/<int:deck_pk>/edit/<int:pk>",
         views.CardUpdateView.as_view(),
         name="card-update"
     ),
     path(
-        "box/<int:box_num>",
+        "decks/<int:deck_pk>/box/<int:box_num>",
         views.BoxView.as_view(),
         name="box"
     ),

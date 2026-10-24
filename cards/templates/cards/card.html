@@ -5,7 +5,7 @@
     {% if not check_card %}
         <p>{{ card.answer }}</p>
         <hr>
-        <a href="{% url 'card-update' card.id %}" role="button">
+        <a href="{% url 'card-update' card.deck_id card.id %}" role="button">
             ✏️ Edit Card
         </a>
     {% else %}

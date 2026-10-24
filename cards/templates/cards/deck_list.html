@@ -1,0 +1,22 @@
+<!-- cards/templates/cards/deck_list.html -->
+
+{% extends "cards/base.html" %}
+
+{% block content %}
+    <h2>My Decks</h2>
+    <a href="{% url 'deck-create' %}" role="button">
+        ✨ Create New Deck
+    </a>
+    {% for deck in deck_list %}
+        <article>
+            <h4>{{ deck.name }}</h4>
+            <p>{{ deck.get_language_display }} · {{ deck.card_count }} card{{ deck.card_count | pluralize }}</p>
+            <hr>
+            <a href="{% url 'box' deck_pk=deck.pk box_num=1 %}" role="button">🎯 Study</a>
+            <a href="{% url 'card-list' deck.pk %}" role="button">🗂 Cards</a>
+            <a href="{% url 'deck-update' deck.pk %}" role="button">✏️ Edit Deck</a>
+        </article>
+    {% empty %}
+        <p>You have no deck yet. Create one to start adding cards.</p>
+    {% endfor %}
+{% endblock content %}

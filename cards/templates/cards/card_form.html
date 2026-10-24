@@ -13,7 +13,7 @@
         {{ form.as_p }}
         <input type="submit" value="Save Card">
     </form>
-    <a href="{% url 'card-list' %}">
+    <a href="{% url 'card-list' deck.pk %}">
         Cancel
     </a>
 {% endblock %}

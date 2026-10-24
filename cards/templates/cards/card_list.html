@@ -5,9 +5,10 @@
 
 {% block content %}
     <h2>
-        All Cards
+        {{ deck.name }}
     </h2>
-    <a href="{% url 'card-create' %}" role="button">
+    <p>{{ deck.get_language_display }}</p>
+    <a href="{% url 'card-create' deck.pk %}" role="button">
         ✨ Create New Card
     </a>
     {% for card in card_list %}
@@ -15,5 +16,7 @@
             <h3>🗃 {{ card.box | ordinal }} Box</h3>
         {% endifchanged %}
         {% include "cards/card.html" %}
+    {% empty %}
+        <p>This deck is empty.</p>
     {% endfor %}
 {% endblock content %}
