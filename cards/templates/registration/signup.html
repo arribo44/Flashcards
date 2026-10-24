@@ -1,13 +1,20 @@
 <!-- cards/templates/registration/signup.html -->
 
-{% extends "cards/base.html" %}
+{% extends "registration/auth_base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Créer un compte{% endblock %}
 
 {% block content %}
-    <h2>Créer un compte</h2>
+    <p class="login-box-msg">Créez votre compte pour commencer</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Créer mon compte">
+        {{ form|crispy }}
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Créer mon compte</button>
+        </div>
     </form>
-    <p>Déjà un compte ? <a href="{% url 'login' %}">Se connecter</a></p>
+    <p class="mb-0 mt-3 text-center">
+        Déjà un compte ? <a href="{% url 'login' %}">Se connecter</a>
+    </p>
 {% endblock %}

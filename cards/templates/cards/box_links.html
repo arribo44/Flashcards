@@ -1,8 +1,15 @@
-<!-- cards/templates/box_links.html -->
+<!-- cards/templates/cards/box_links.html -->
 
 {% for box in boxes %}
-    <a href="{% url 'box' deck_pk=deck.pk box_num=box.number %}"
-       title="{{ box.due_count }} à réviser aujourd'hui / {{ box.card_count }} dans la boîte">
-        🗃 Boîte {{ box.number }} <mark>{{ box.due_count }}</mark>/{{ box.card_count }}
-    </a>
+    <li class="nav-item">
+        <a href="{% url 'box' deck_pk=deck.pk box_num=box.number %}"
+           class="nav-link{% if request.resolver_match.url_name == 'box' and request.resolver_match.kwargs.box_num == box.number %} active{% endif %}"
+           title="{{ box.due_count }} à réviser aujourd'hui / {{ box.card_count }} dans la boîte">
+            <i class="nav-icon bi bi-{{ box.number }}-square"></i>
+            <p>
+                Boîte {{ box.number }}
+                <span class="nav-badge badge box-swatch box-{{ box.number }} me-3">{{ box.due_count }}/{{ box.card_count }}</span>
+            </p>
+        </a>
+    </li>
 {% endfor %}

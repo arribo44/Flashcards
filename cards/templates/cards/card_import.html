@@ -1,25 +1,44 @@
 <!-- cards/templates/cards/card_import.html -->
 
 {% extends "cards/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Importer un CSV{% endblock %}
+{% block page_title %}<i class="bi bi-filetype-csv me-2 text-primary"></i>Importer des cartes (CSV){% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Importer un CSV</li>
+{% endblock %}
 
 {% block content %}
-    <h2>📥 Importer des cartes</h2>
-    <p>
-        Ajoutez plusieurs cartes d'un coup dans « {{ deck.name }} » depuis un
-        fichier CSV (exporté d'un tableur, par exemple). Les nouvelles cartes
-        arrivent dans la boîte 1 ; celles dont la question existe déjà dans le
-        paquet sont ignorées. Si une ligne est invalide, rien n'est importé.
-    </p>
-    <p>Exemple :</p>
-    <pre>question;réponse;exemple
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card card-primary card-outline">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i> Importer</button>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="callout callout-info">
+                <h5><i class="bi bi-info-circle me-1"></i> Format attendu</h5>
+                <p>
+                    Une carte par ligne : question, réponse et, si vous voulez, un exemple.
+                    Les nouvelles cartes arrivent dans la boîte 1 de « {{ deck.name }} » ;
+                    celles dont la question existe déjà sont ignorées.
+                    Si une ligne est invalide, rien n'est importé.
+                </p>
+                <pre class="mb-0 small">question;réponse;exemple
 Hectic;Intense;It's been a hectic week.
 To sprinkle;Saupoudrer;</pre>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Importer">
-    </form>
-    <a href="{% url 'card-list' deck.pk %}">
-        Annuler
-    </a>
+            </div>
+        </div>
+    </div>
 {% endblock %}

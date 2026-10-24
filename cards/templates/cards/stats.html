@@ -2,231 +2,154 @@
 
 {% extends "cards/base.html" %}
 
-{% block extra_head %}
-    <style>
-        .hero {
-            text-align: center;
-            margin: 1em 0 2em;
-        }
-
-        .hero-value {
-            display: block;
-            font-size: 3.5rem;
-            font-weight: 600;
-            line-height: 1.1;
-        }
-
-        .hero-label,
-        .tile-label,
-        .tile-note,
-        .chart-axis {
-            color: var(--text-light);
-        }
-
-        .tiles {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-            gap: 1em;
-        }
-
-        .tile {
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 0.75em 1em;
-        }
-
-        .tile-label {
-            display: block;
-            font-size: 0.9rem;
-        }
-
-        .tile-value {
-            display: block;
-            font-size: 1.6rem;
-            font-weight: 600;
-        }
-
-        .tile-note {
-            font-size: 0.8rem;
-        }
-
-        .chart {
-            display: flex;
-            align-items: flex-end;
-            height: 10rem;
-            border-bottom: 1px solid var(--border);
-            padding-top: 1.5rem;
-        }
-
-        .chart-column {
-            position: relative;
-            flex: 1;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            outline-offset: 2px;
-        }
-
-        .chart-bar {
-            position: relative;
-            width: min(24px, 70%);
-            background: var(--accent);
-            border-radius: 4px 4px 0 0;
-        }
-
-        /* Out of the flow, so the label never shrinks the bar it sits on */
-        .chart-cap {
-            position: absolute;
-            bottom: calc(100% + 0.2em);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.8rem;
-        }
-
-        .chart-tooltip {
-            display: none;
-            position: absolute;
-            bottom: calc(100% + 0.3em);
-            z-index: 1;
-            white-space: nowrap;
-            background: var(--text);
-            color: var(--bg);
-            font-size: 0.8rem;
-            padding: 0.3em 0.6em;
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        .chart-column:first-child .chart-tooltip { left: 0; }
-        .chart-column:last-child .chart-tooltip { right: 0; }
-
-        .chart-column:hover .chart-tooltip,
-        .chart-column:focus .chart-tooltip {
-            display: block;
-        }
-
-        .chart-axis {
-            display: flex;
-            font-size: 0.75rem;
-            margin-bottom: 1em;
-        }
-
-        .chart-axis span {
-            flex: 1;
-            text-align: center;
-        }
-
-        .chart-axis .today {
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .table-scroll {
-            overflow-x: auto;
-        }
-    </style>
-{% endblock extra_head %}
+{% block title %}Statistiques{% endblock %}
+{% block page_title %}<i class="bi bi-bar-chart-line me-2 text-primary"></i>Statistiques{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Statistiques</li>
+{% endblock %}
 
 {% block content %}
-    <h2>📊 Statistiques</h2>
-
-    <p class="hero">
-        <span class="hero-value">🔥 {{ streak }}</span>
-        <span class="hero-label">
-            jour{{ streak | pluralize }} de révision d'affilée
-            {% if streak and not reviewed_today %}· révisez aujourd'hui pour continuer la série{% endif %}
-            {% if best_streak > streak %}· record : {{ best_streak }} jour{{ best_streak | pluralize }}{% endif %}
-        </span>
-    </p>
-
-    <div class="tiles">
-        <div class="tile">
-            <span class="tile-label">À réviser aujourd'hui</span>
-            <span class="tile-value">{{ due_today }}</span>
+    <div class="row g-3 mb-3">
+        <div class="col-lg-4">
+            <div class="card h-100 text-center">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="hero-streak">🔥 {{ streak }}</div>
+                    <div class="text-secondary mt-2">
+                        jour{{ streak | pluralize }} de révision d'affilée
+                    </div>
+                    {% if streak and not reviewed_today %}
+                        <div class="small text-warning-emphasis mt-1">Révisez aujourd'hui pour continuer la série</div>
+                    {% endif %}
+                    {% if best_streak > streak %}
+                        <div class="small text-secondary mt-1">Record : {{ best_streak }} jour{{ best_streak | pluralize }}</div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <div class="tile">
-            <span class="tile-label">Taux de réussite</span>
-            <span class="tile-value">{% if success_rate is None %}–{% else %}{{ success_rate }} %{% endif %}</span>
-            <span class="tile-note">sur {{ recent_total }} révision{{ recent_total | pluralize }} en {{ success_rate_days }} jours</span>
-        </div>
-        <div class="tile">
-            <span class="tile-label">Cartes maîtrisées</span>
-            <span class="tile-value">{{ mastered }}</span>
-            <span class="tile-note">en boîte 5, sur {{ card_total }} carte{{ card_total | pluralize }}</span>
+        <div class="col-lg-8">
+            <div class="row g-3">
+                <div class="col-md-4 col-lg-12 col-xl-4">
+                    <div class="info-box mb-0 h-100">
+                        <span class="info-box-icon text-bg-warning shadow-sm"><i class="bi bi-clock-history"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">À réviser aujourd'hui</span>
+                            <span class="info-box-number fs-4">{{ due_today }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-12 col-xl-4">
+                    <div class="info-box mb-0 h-100">
+                        <span class="info-box-icon text-bg-success shadow-sm"><i class="bi bi-check2-circle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Taux de réussite</span>
+                            <span class="info-box-number fs-4">{% if success_rate is None %}–{% else %}{{ success_rate }} %{% endif %}</span>
+                            <span class="small text-secondary">sur {{ recent_total }} révision{{ recent_total | pluralize }} en {{ success_rate_days }} jours</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-12 col-xl-4">
+                    <div class="info-box mb-0 h-100">
+                        <span class="info-box-icon text-bg-primary shadow-sm"><i class="bi bi-trophy"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Cartes maîtrisées</span>
+                            <span class="info-box-number fs-4">{{ mastered }}</span>
+                            <span class="small text-secondary">en boîte 5, sur {{ card_total }} carte{{ card_total | pluralize }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h3>Révisions des {{ daily | length }} derniers jours</h3>
-    {% if daily_total %}
-        <div class="chart" role="img"
-             aria-label="Nombre de révisions par jour sur les {{ daily | length }} derniers jours, {{ daily_total }} au total. Détail dans le tableau ci-dessous.">
-            {% for day in daily %}
-                <div class="chart-column" tabindex="0">
-                    <div class="chart-bar" style="height: {{ day.height }}%">
-                        {% if day.total and day.total == busiest %}
-                            <span class="chart-cap">{{ day.total }}</span>
-                        {% endif %}
-                    </div>
-                    <span class="chart-tooltip">
-                        {{ day.date | date:"l j F" }} : {{ day.total }} révision{{ day.total | pluralize }},
-                        {{ day.solved }} réussie{{ day.solved | pluralize }}
-                    </span>
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="card-title">Révisions des {{ daily | length }} derniers jours</h3>
                 </div>
-            {% endfor %}
-        </div>
-        <div class="chart-axis" aria-hidden="true">
-            {% for day in daily %}
-                <span{% if day.is_today %} class="today"{% endif %}>{{ day.date | date:"j" }}</span>
-            {% endfor %}
-        </div>
-        <details>
-            <summary>Voir le tableau</summary>
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr><th>Jour</th><th>Révisions</th><th>Réussies</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for day in daily %}
-                            <tr>
-                                <td>{{ day.date | date:"l j F" }}</td>
-                                <td>{{ day.total }}</td>
-                                <td>{{ day.solved }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="card-body">
+                    {% if daily_total %}
+                        <div class="chart" role="img"
+                             aria-label="Nombre de révisions par jour sur les {{ daily | length }} derniers jours, {{ daily_total }} au total. Détail dans le tableau ci-dessous.">
+                            {% for day in daily %}
+                                <div class="chart-column" tabindex="0">
+                                    <div class="chart-bar" style="height: {{ day.height }}%">
+                                        {% if day.total and day.total == busiest %}
+                                            <span class="chart-cap">{{ day.total }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="chart-tooltip">
+                                        {{ day.date | date:"l j F" }} : {{ day.total }} révision{{ day.total | pluralize }},
+                                        {{ day.solved }} réussie{{ day.solved | pluralize }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="chart-axis mb-3" aria-hidden="true">
+                            {% for day in daily %}
+                                <span{% if day.is_today %} class="today"{% endif %}>{{ day.date | date:"j" }}</span>
+                            {% endfor %}
+                        </div>
+                        <details>
+                            <summary class="small">Voir le tableau</summary>
+                            <div class="table-responsive mt-2">
+                                <table class="table table-sm small mb-0">
+                                    <thead>
+                                        <tr><th>Jour</th><th class="text-end">Révisions</th><th class="text-end">Réussies</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for day in daily %}
+                                            <tr>
+                                                <td>{{ day.date | date:"l j F" }}</td>
+                                                <td class="text-end">{{ day.total }}</td>
+                                                <td class="text-end">{{ day.solved }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    {% else %}
+                        <p class="text-secondary mb-0">Aucune révision ces {{ daily | length }} derniers jours.</p>
+                    {% endif %}
+                </div>
             </div>
-        </details>
-    {% else %}
-        <p>Aucune révision ces {{ daily | length }} derniers jours.</p>
-    {% endif %}
-
-    <h3>Progression par paquet</h3>
-    {% if decks %}
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Paquet</th>
-                        {% for box in boxes %}<th>Boîte {{ box }}</th>{% endfor %}
-                        <th>À réviser</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for deck in decks %}
-                        <tr>
-                            <td><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></td>
-                            {% for count in deck.box_counts %}<td>{{ count }}</td>{% endfor %}
-                            <td><a href="{% url 'study' deck.pk %}">{{ deck.due_count }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
-    {% else %}
-        <p>Vous n'avez pas encore de paquet.</p>
-    {% endif %}
+        <div class="col-xl-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="card-title">Progression par paquet</h3>
+                </div>
+                {% if decks %}
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Paquet</th>
+                                        {% for box in boxes %}
+                                            <th class="text-center"><span class="badge box-swatch box-{{ box }}" title="Boîte {{ box }}">{{ box }}</span></th>
+                                        {% endfor %}
+                                        <th class="text-end">À réviser</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for deck in decks %}
+                                        <tr>
+                                            <td><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></td>
+                                            {% for count in deck.box_counts %}<td class="text-center">{{ count }}</td>{% endfor %}
+                                            <td class="text-end"><a href="{% url 'study' deck.pk %}" class="badge text-bg-warning text-decoration-none">{{ deck.due_count }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer small text-secondary">Les colonnes 1 à 5 sont les boîtes de Leitner : la boîte 5 contient les cartes maîtrisées.</div>
+                {% else %}
+                    <div class="card-body"><p class="text-secondary mb-0">Vous n'avez pas encore de paquet.</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock content %}

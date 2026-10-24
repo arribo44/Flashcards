@@ -2,18 +2,35 @@
 
 {% extends "cards/base.html" %}
 
+{% block title %}Supprimer le paquet{% endblock %}
+{% block page_title %}Supprimer le paquet{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Supprimer</li>
+{% endblock %}
+
 {% block content %}
-    <h2>🗑 Supprimer le paquet</h2>
-    <p>
-        Le paquet « {{ deck.name }} » et
-        <strong>ses {{ deck.card_count }} carte{{ deck.card_count | pluralize }}</strong>
-        seront supprimés définitivement.
-    </p>
-    <form method="post">
-        {% csrf_token %}
-        <input type="submit" value="🗑 Supprimer définitivement">
-    </form>
-    <a href="{% url 'deck-list' %}">
-        Annuler
-    </a>
+    <div class="row">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card card-danger card-outline">
+                <div class="card-body">
+                    <div class="alert alert-danger d-flex gap-3 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                        <div>
+                            Le paquet « {{ deck.name }} » et
+                            <strong>ses {{ deck.card_count }} carte{{ deck.card_count | pluralize }}</strong>
+                            seront supprimés définitivement.
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Supprimer définitivement</button>
+                        <a href="{% url 'deck-list' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

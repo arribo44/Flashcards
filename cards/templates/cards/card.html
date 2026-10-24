@@ -2,70 +2,28 @@
 
 {% load humanize %}
 
-<article>
-    {% if check_card and reverse %}
-        <h4>{{ card.answer }}</h4>
-    {% else %}
-        <h4>
-            {{ card.question }}
-            {% include "cards/speak_button.html" with text=card.question %}
-        </h4>
-    {% endif %}
-    {% if not check_card %}
-        <p>{{ card.answer }}</p>
+<tr>
+    <td>
+        <span class="fw-semibold">{{ card.question }}</span>
+        {% include "cards/speak_button.html" with text=card.question %}
         {% if card.example %}
-            <p>
-                <em>{{ card.example }}</em>
-                {% include "cards/speak_button.html" with text=card.example %}
-            </p>
+            {% include "cards/example_lines.html" with class="card-example" %}
         {% endif %}
-        <p>
-            <small>
-                {% if card.is_due %}
-                    À réviser aujourd'hui
-                {% else %}
-                    Prochaine révision : {{ card.due_date | naturalday }}
-                {% endif %}
-            </small>
-        </p>
-        <hr>
-        <a href="{% url 'card-update' card.deck_id card.id %}" role="button">
-            ✏️ Modifier
-        </a>
-        <a href="{% url 'card-delete' card.deck_id card.id %}" role="button">
-            🗑 Supprimer
-        </a>
-    {% else %}
-        {% if answer_mode == "type" %}
-            <form class="type-answer" hidden
-                  data-expected="{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}">
-                <input type="text" name="typed" placeholder="Votre réponse" aria-label="Votre réponse"
-                       autocomplete="off" autocapitalize="off" spellcheck="false">
-                <input type="submit" value="Vérifier">
-            </form>
-            <p class="verdict" hidden></p>
+    </td>
+    <td>{{ card.answer }}</td>
+    <td class="d-none d-md-table-cell small text-nowrap">
+        {% if card.is_due %}
+            <span class="badge text-bg-warning">À réviser aujourd'hui</span>
+        {% else %}
+            Prochaine révision : {{ card.due_date | naturalday }}
         {% endif %}
-        <details class="answer">
-            <summary>Afficher la réponse</summary>
-            {% if reverse %}
-                <p>
-                    {{ card.question }}
-                    {% include "cards/speak_button.html" with text=card.question %}
-                </p>
-            {% else %}
-                <p>{{ card.answer }}</p>
-            {% endif %}
-            {% if card.example %}
-                <p>
-                    <em>{{ card.example }}</em>
-                    {% include "cards/speak_button.html" with text=card.example %}
-                </p>
-            {% endif %}
-            <hr>
-            <div class="answer-buttons">
-                {% include "cards/card_check_form.html" with solved=True %}
-                {% include "cards/card_check_form.html" with solved=False %}
-            </div>
-        </details>
-    {% endif %}
-</article>
+    </td>
+    <td class="text-end text-nowrap">
+        <a href="{% url 'card-update' card.deck_id card.id %}" class="btn btn-sm btn-outline-secondary" title="Modifier">
+            <i class="bi bi-pencil"></i><span class="visually-hidden">Modifier</span>
+        </a>
+        <a href="{% url 'card-delete' card.deck_id card.id %}" class="btn btn-sm btn-outline-danger" title="Supprimer">
+            <i class="bi bi-trash"></i><span class="visually-hidden">Supprimer</span>
+        </a>
+    </td>
+</tr>

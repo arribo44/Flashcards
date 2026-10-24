@@ -1,0 +1,10 @@
+<!-- cards/templates/cards/example_lines.html -->
+
+<ul class="example-lines list-unstyled mb-0 {{ class }}">
+    {% for line in card.example_lines %}
+        <li>
+            {{ line }}
+            {% include "cards/speak_button.html" with text=line %}
+        </li>
+    {% endfor %}
+</ul>

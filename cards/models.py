@@ -50,11 +50,11 @@ class Card(models.Model):
         related_name="cards",
         verbose_name="paquet",
     )
-    question = models.CharField("question", max_length=100)
-    answer = models.CharField("réponse", max_length=100)
+    question = models.CharField("question", max_length=200)
+    answer = models.CharField("réponse", max_length=200)
     example = models.CharField(
         "exemple",
-        max_length=200,
+        max_length=500,
         blank=True,
         help_text="Une phrase qui utilise la question en contexte (facultatif).",
     )
@@ -76,6 +76,11 @@ class Card(models.Model):
     @property
     def is_due(self):
         return self.due_date <= timezone.localdate()
+
+    @property
+    def example_lines(self):
+        """The example split into its sentences, which decks often separate with ";"."""
+        return [line.strip() for line in self.example.split(";") if line.strip()]
 
     def move(self, solved):
         new_box = self.box + 1 if solved else BOXES[0]

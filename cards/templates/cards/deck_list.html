@@ -2,24 +2,90 @@
 
 {% extends "cards/base.html" %}
 
+{% block title %}Mes paquets{% endblock %}
+{% block page_title %}Mes paquets{% endblock %}
+{% block breadcrumb_root %}<li class="breadcrumb-item active" aria-current="page">Mes paquets</li>{% endblock %}
+
 {% block content %}
-    <h2>Mes paquets</h2>
-    {% if streak %}
-        <p>🔥 Série en cours : <strong>{{ streak }} jour{{ streak | pluralize }}</strong> de révision d'affilée.</p>
-    {% endif %}
-    <a href="{% url 'deck-create' %}" role="button">
-        ✨ Nouveau paquet
-    </a>
-    {% for deck in deck_list %}
-        <article>
-            <h4>{{ deck.name }}</h4>
-            <p>{{ deck.get_language_display }} · {{ deck.card_count }} carte{{ deck.card_count | pluralize }}</p>
-            <hr>
-            <a href="{% url 'study' deck.pk %}" role="button">🎯 Réviser ({{ deck.due_count }} à revoir)</a>
-            <a href="{% url 'card-list' deck.pk %}" role="button">🗂 Cartes</a>
-            <a href="{% url 'deck-update' deck.pk %}" role="button">✏️ Modifier</a>
-        </article>
-    {% empty %}
-        <p>Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des cartes.</p>
-    {% endfor %}
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+        <a href="{% url 'deck-create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Nouveau paquet
+        </a>
+        {% if streak %}
+            <span class="badge text-bg-warning fs-6 fw-semibold">
+                🔥 Série en cours : <strong>{{ streak }} jour{{ streak | pluralize }}</strong> de révision d'affilée
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="row g-3">
+        {% for deck in deck_list %}
+            <div class="col-md-6 col-xxl-4">
+                <div class="card deck-card h-100 card-outline card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <a href="{% url 'card-list' deck.pk %}" class="text-reset text-decoration-none">{{ deck.name }}</a>
+                        </h3>
+                        <div class="card-tools">
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ deck.get_language_display }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><strong>{{ deck.card_count }}</strong> carte{{ deck.card_count | pluralize }}</span>
+                            {% if deck.due_count %}
+                                <span class="text-warning-emphasis"><i class="bi bi-clock-history me-1"></i>{{ deck.due_count }} à revoir</span>
+                            {% else %}
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>À jour</span>
+                            {% endif %}
+                        </div>
+                        {% if deck.card_count %}
+                            <div class="progress-stacked box-progress" role="img"
+                                 aria-label="Répartition des cartes par boîte : {% for box in deck.box_shares %}boîte {{ box.number }} : {{ box.count }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                {% for box in deck.box_shares %}
+                                    {% if box.count %}
+                                        <div class="progress" style="width: {{ box.percent|floatformat:'1u' }}%">
+                                            <div class="progress-bar box-swatch box-{{ box.number }}" title="Boîte {{ box.number }} : {{ box.count }} carte{{ box.count | pluralize }}"></div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex justify-content-between small text-secondary mt-1">
+                                <span>Boîte 1</span><span>Boîte 5 (maîtrisées)</span>
+                            </div>
+                        {% else %}
+                            <p class="text-secondary mb-0">Ce paquet est vide : ajoutez ou importez des cartes.</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer d-flex flex-wrap gap-2">
+                        <a href="{% url 'study' deck.pk %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-bullseye me-1"></i> Réviser ({{ deck.due_count }} à revoir)
+                        </a>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-card-list me-1"></i> Cartes
+                        </a>
+                        <a href="{% url 'deck-update' deck.pk %}" class="btn btn-outline-secondary btn-sm ms-auto" title="Modifier le paquet">
+                            <i class="bi bi-pencil"></i><span class="visually-hidden">Modifier</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-stack display-4 text-primary"></i>
+                        <h2 class="h4 mt-3">Bienvenue !</h2>
+                        <p class="text-secondary mb-4">
+                            Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des cartes,
+                            ou à importer un fichier CSV ou un paquet Anki.
+                        </p>
+                        <a href="{% url 'deck-create' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-lg me-1"></i> Créer mon premier paquet
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock content %}

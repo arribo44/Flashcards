@@ -1,25 +1,46 @@
 <!-- cards/templates/cards/deck_form.html -->
 
 {% extends "cards/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if deck %}Paramètres du paquet{% else %}Nouveau paquet{% endif %}{% endblock %}
+{% block page_title %}{% if deck %}Paramètres de « {{ deck.name }} »{% else %}Nouveau paquet{% endif %}{% endblock %}
+{% block breadcrumb %}
+    {% if deck %}<li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>{% endif %}
+    <li class="breadcrumb-item active" aria-current="page">{% if deck %}Paramètres{% else %}Nouveau paquet{% endif %}</li>
+{% endblock %}
 
 {% block content %}
-    {% if deck %}
-        <h2>✏️ Modifier le paquet</h2>
-    {% else %}
-        <h2>✨ Nouveau paquet</h2>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Enregistrer">
-    </form>
-    <a href="{% url 'deck-list' %}">
-        Annuler
-    </a>
-    {% if deck %}
-        <hr>
-        <a href="{% url 'deck-delete' deck.pk %}" role="button">
-            🗑 Supprimer ce paquet
-        </a>
-    {% endif %}
+    <div class="row">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card card-primary card-outline mb-4">
+                <form method="post">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="form-text">
+                            La langue choisit la voix qui prononce les cartes (bouton <i class="bi bi-volume-up"></i>).
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Enregistrer</button>
+                        <a href="{% url 'deck-list' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+            {% if deck %}
+                <div class="card border-danger-subtle">
+                    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                        <div class="flex-grow-1">
+                            <strong>Supprimer le paquet</strong>
+                            <div class="small text-secondary">Le paquet et toutes ses cartes seront supprimés définitivement.</div>
+                        </div>
+                        <a href="{% url 'deck-delete' deck.pk %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i> Supprimer ce paquet
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

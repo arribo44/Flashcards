@@ -2,7 +2,13 @@
 
 {% extends "cards/base.html" %}
 
+{% block title %}Révision · {{ deck.name }}{% endblock %}
+{% block page_title %}<i class="bi bi-bullseye me-2 text-primary"></i>Révision du jour{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Révision</li>
+{% endblock %}
+
 {% block content %}
-    <h2>🎯 Révision du jour</h2>
     {% include "cards/review.html" %}
 {% endblock content %}

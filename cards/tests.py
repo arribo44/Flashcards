@@ -1,4 +1,12 @@
+import io
+import json
+import os
+import sqlite3
+import tempfile
+import zipfile
 from datetime import timedelta
+
+import zstandard
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -6,7 +14,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from . import stats
+from . import anki, stats
 from .models import Card, Deck, NUM_BOXES, REVIEW_INTERVALS, Review
 
 
@@ -44,6 +52,11 @@ class CardMoveTests(TestCase):
         card = Card.objects.create(deck=self.deck, question="q", answer="a", box=4)
         card.move(False)
         self.assertTrue(card.is_due)
+
+    def test_example_lines(self):
+        card = Card(example="I hate him ; a deep hatred;  ; out of hatred")
+        self.assertEqual(card.example_lines, ["I hate him", "a deep hatred", "out of hatred"])
+        self.assertEqual(Card(example="").example_lines, [])
 
     def test_move_records_review_kept_after_card_deletion(self):
         card = Card.objects.create(deck=self.deck, question="q", answer="a")
@@ -94,6 +107,7 @@ class AccessTests(TestCase):
             reverse("study", args=[self.deck.pk]),
             reverse("card-delete", args=[self.deck.pk, self.card.pk]),
             reverse("card-import", args=[self.deck.pk]),
+            reverse("anki-upload", args=[self.deck.pk]),
             reverse("deck-update", args=[self.deck.pk]),
             reverse("deck-delete", args=[self.deck.pk]),
         ]
@@ -211,14 +225,14 @@ class StudyTests(TestCase):
         self.add_card("hectic", "intense")
         response = self.client.get(self.url + "?direction=reverse")
         self.assertTrue(response.context["reverse"])
-        self.assertContains(response, "<h4>intense</h4>", html=True)
+        self.assertContains(response, '<h2 class="review-question">intense</h2>', html=True)
         response = self.client.get(self.url)
         self.assertTrue(response.context["reverse"])
 
     def test_answer_buttons_are_hidden_until_reveal(self):
         self.add_card("hectic", "intense")
         html = self.client.get(self.url).content.decode()
-        details = html[html.index('<details class="answer">'):html.index("</details>")]
+        details = html[html.index('<details class="answer'):html.index("</details>")]
         self.assertIn('data-solved="true"', details)
         self.assertIn('data-solved="false"', details)
 
@@ -235,6 +249,25 @@ class StudyTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.context["answer_mode"], "reveal")
         self.assertNotContains(response, 'class="type-answer"')
+
+    def test_voice_picker_for_deck_language(self):
+        self.deck.language = "es"
+        self.deck.save()
+        self.add_card("comer", "manger")
+        for url in (self.url, reverse("card-list", args=[self.deck.pk])):
+            html = self.client.get(url).content.decode()
+            picker = html[html.index('<label class="voice-picker'):]
+            self.assertIn('data-lang="es-ES" data-sample="comer"', picker[:300])
+
+    def test_each_example_sentence_can_be_heard(self):
+        card = self.add_card("a hatred", "une haine")
+        card.example = "his hatred of injustice ; she looked at him with hatred"
+        card.save()
+        for url in (self.url, reverse("card-list", args=[self.deck.pk])):
+            html = self.client.get(url).content.decode()
+            self.assertIn('data-speak="his hatred of injustice"', html)
+            self.assertIn('data-speak="she looked at him with hatred"', html)
+            self.assertNotIn('data-speak="his hatred of injustice ;', html)
 
     def test_speak_button_uses_deck_voice(self):
         self.add_card("hectic", "intense")
@@ -369,17 +402,250 @@ class ImportTests(TestCase):
         self.assertContains(response, "Ligne 2 : il faut une question et une réponse.")
 
     def test_too_long_field_is_rejected(self):
-        response = self.upload("Hectic;" + "x" * 101 + ";" + "y" * 201 + "\nGrave;Tombe;" + "z" * 200)
+        response = self.upload("Hectic;" + "x" * 201 + ";" + "y" * 501 + "\nGrave;Tombe;" + "z" * 500)
         self.assertEqual(self.deck.cards.count(), 0)
         self.assertContains(
             response,
-            "Ligne 1 : trop long pour réponse (100 caractères max.), exemple (200 caractères max.).",
+            "Ligne 1 : trop long pour réponse (200 caractères max.), exemple (500 caractères max.).",
         )
         self.assertNotContains(response, "Ligne 2")
 
     def test_empty_file_is_rejected(self):
         response = self.upload("question;réponse\n")
         self.assertContains(response, "Le fichier ne contient aucune carte.")
+
+
+def make_collection(note_types, modern):
+    """Build an Anki collection database; note_types maps (id, name, fields) to notes."""
+    with tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False) as db_file:
+        path = db_file.name
+    connection = sqlite3.connect(path)
+    connection.execute("CREATE TABLE notes (id INTEGER PRIMARY KEY, mid INTEGER, flds TEXT)")
+    if modern:
+        # Like Anki, use its custom collation, unknown to plain SQLite
+        connection.create_collation("unicase", anki.compare_unicase)
+        connection.execute("CREATE TABLE notetypes (id INTEGER PRIMARY KEY, name TEXT COLLATE unicase)")
+        connection.execute(
+            "CREATE TABLE fields (ntid INTEGER, ord INTEGER, name TEXT COLLATE unicase, "
+            "PRIMARY KEY (ntid, ord))"
+        )
+        connection.execute("CREATE UNIQUE INDEX idx_fields_name_ntid ON fields (name, ntid)")
+    else:
+        connection.execute("CREATE TABLE col (id INTEGER PRIMARY KEY, models TEXT)")
+    models = {}
+    for (ntid, name, fields), notes in note_types.items():
+        if modern:
+            connection.execute("INSERT INTO notetypes VALUES (?, ?)", (ntid, name))
+            # Insert fields out of order: the reader must sort them
+            for order, field in reversed(list(enumerate(fields))):
+                connection.execute("INSERT INTO fields VALUES (?, ?, ?)", (ntid, order, field))
+        else:
+            models[str(ntid)] = {
+                "name": name,
+                "flds": [{"name": field, "ord": order} for order, field in enumerate(fields)],
+            }
+        for note in notes:
+            connection.execute(
+                "INSERT INTO notes (mid, flds) VALUES (?, ?)", (ntid, "\x1f".join(note))
+            )
+    if not modern:
+        connection.execute("INSERT INTO col VALUES (1, ?)", (json.dumps(models),))
+    connection.commit()
+    connection.close()
+    with open(path, "rb") as db_file:
+        data = db_file.read()
+    os.unlink(path)
+    return data
+
+
+def make_apkg(note_types, modern=False, name="deck.apkg"):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        if modern:
+            archive.writestr(
+                "collection.anki21b",
+                zstandard.ZstdCompressor().compress(make_collection(note_types, modern=True)),
+            )
+            placeholder = {(1, "Basic", ("Front", "Back")): [
+                ["Please update to the latest Anki version, then import the .colpkg/.apkg file again.", ""]
+            ]}
+            archive.writestr("collection.anki2", make_collection(placeholder, modern=False))
+        else:
+            archive.writestr("collection.anki2", make_collection(note_types, modern=False))
+        archive.writestr("media", "{}")
+    return SimpleUploadedFile(name, buffer.getvalue(), "application/octet-stream")
+
+
+BASIC = (1001, "Basic", ("Front", "Back", "Example"))
+
+
+class AnkiReaderTests(TestCase):
+    def test_clean_field(self):
+        self.assertEqual(anki.clean_field("<b>To</b>&nbsp;sprinkle [sound:a.mp3]"), "To sprinkle")
+        self.assertEqual(anki.clean_field("{{c1::hola::greeting}} amigo"), "hola amigo")
+        self.assertEqual(anki.clean_field("<div>uno</div><div>dos</div>"), "uno dos")
+        self.assertEqual(anki.clean_field('<img src="cat.jpg">gato &amp; perro'), "gato & perro")
+
+    def test_shorten(self):
+        self.assertEqual(anki.shorten("short", 10), "short")
+        self.assertEqual(anki.shorten("one example ; another one ; a third", 30), "one example ; another one…")
+        self.assertEqual(anki.shorten("a sentence without separators at all", 20), "a sentence without…")
+        self.assertLessEqual(len(anki.shorten("x" * 600, 500)), 500)
+
+    def test_suggest_mapping_by_field_names(self):
+        fields = ["Note ID", "LexiqueFR", "Front", "Back", "ExempleEN", "ExempleFR"]
+        notes = [["1461616377470", "insulte", "a scum", "une pourriture", "the scum of the earth", ""]] * 3
+        self.assertEqual(
+            anki.suggest_mapping(fields, notes), {"question": 2, "answer": 3, "example": 4}
+        )
+
+    def test_suggest_mapping_skips_ids_and_empty_fields(self):
+        fields = ["Id", "Vide", "Mot", "Traduction du mot"]
+        notes = [["1", "", "comer", "manger"], ["2", "", "beber", "boire"]]
+        self.assertEqual(
+            anki.suggest_mapping(fields, notes), {"question": 2, "answer": 3, "example": None}
+        )
+
+    def test_numeric_fields(self):
+        notes = [["12", "a", "3"], ["13", "b", ""], ["14", "c", "x"]]
+        self.assertEqual(anki.numeric_fields(notes), {0})
+
+    def test_legacy_package(self):
+        note_types = anki.read_apkg(make_apkg({BASIC: [["Hectic", "<i>Intense</i>", ""]]}))
+        self.assertEqual(note_types, [{
+            "id": "1001", "name": "Basic", "fields": ["Front", "Back", "Example"],
+            "notes": [["Hectic", "Intense", ""]],
+        }])
+
+    def test_modern_package_is_preferred_over_placeholder(self):
+        note_types = anki.read_apkg(make_apkg({BASIC: [["Cradle", "Berceau", "A baby cradle"]]}, modern=True))
+        self.assertEqual(note_types[0]["fields"], ["Front", "Back", "Example"])
+        self.assertEqual(note_types[0]["notes"], [["Cradle", "Berceau", "A baby cradle"]])
+
+    def test_missing_fields_are_padded(self):
+        note_types = anki.read_apkg(make_apkg({BASIC: [["Grave", "Tombe"]]}))
+        self.assertEqual(note_types[0]["notes"], [["Grave", "Tombe", ""]])
+
+    def test_note_types_sorted_by_use(self):
+        other = (2002, "Reverse", ("A", "B"))
+        note_types = anki.read_apkg(make_apkg({
+            BASIC: [["a", "b", ""]],
+            other: [["c", "d"], ["e", "f"]],
+            (3003, "Unused", ("X",)): [],
+        }))
+        self.assertEqual([nt["name"] for nt in note_types], ["Reverse", "Basic"])
+
+    def test_placeholder_only_package_is_rejected(self):
+        placeholder = {BASIC: [["Please update to the latest Anki version, then import.", "", ""]]}
+        with self.assertRaisesMessage(anki.AnkiImportError, "réexportez-le depuis Anki"):
+            anki.read_apkg(make_apkg(placeholder))
+
+    def test_invalid_files_are_rejected(self):
+        not_zip = SimpleUploadedFile("deck.apkg", b"not a zip")
+        with self.assertRaisesMessage(anki.AnkiImportError, "pas un paquet Anki"):
+            anki.read_apkg(not_zip)
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            archive.writestr("collection.anki2", b"garbage")
+        with self.assertRaisesMessage(anki.AnkiImportError, "illisible"):
+            anki.read_apkg(SimpleUploadedFile("deck.apkg", buffer.getvalue()))
+
+
+class AnkiImportViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("alice", password="pw")
+        self.deck = Deck.objects.create(name="Words", language="en", owner=self.user)
+        self.client.force_login(self.user)
+        self.upload_url = reverse("anki-upload", args=[self.deck.pk])
+        self.map_url = reverse("anki-map", args=[self.deck.pk])
+
+    def upload(self, apkg):
+        return self.client.post(self.upload_url, {"apkg_file": apkg})
+
+    def test_full_import_with_field_mapping(self):
+        Card.objects.create(deck=self.deck, question="Hectic", answer="Intense")
+        response = self.upload(make_apkg({BASIC: [
+            ["Intense", "Hectic", "A hectic week"],
+            ["Berceau", "Cradle", "A baby <b>cradle</b>"],
+            ["", "Grave", ""],
+            ["Tombe", "x" * 201, ""],
+            ["Long", "Lengthy", "It goes on ; " * 50],
+        ]}, name="english.apkg"))
+        self.assertRedirects(response, self.map_url)
+
+        response = self.client.get(self.map_url)
+        self.assertContains(response, "english.apkg")
+        self.assertContains(response, "<th>Example</th>", html=True)
+
+        # Back is the English word here: use it as the question
+        response = self.client.post(
+            self.map_url, {"note_type": "1001", "question": 1, "answer": 0, "example": 2}, follow=True
+        )
+        self.assertRedirects(response, reverse("card-list", args=[self.deck.pk]))
+        self.assertEqual(
+            list(self.deck.cards.order_by("pk").values_list("question", "answer", "example", "box")),
+            [("Hectic", "Intense", "", 1), ("Cradle", "Berceau", "A baby cradle", 1)]
+            + [("Lengthy", "Long", anki.shorten("It goes on ; " * 50, 500), 1)],
+        )
+        self.assertTrue(self.deck.cards.get(question="Lengthy").example.endswith("on…"))
+        self.assertContains(
+            response,
+            "2 cartes importées. 1 ignorée (déjà présente). 1 ignorée (question ou réponse vide). "
+            "1 ignorée (trop longue).",
+        )
+        self.assertNotIn("anki_import", self.client.session)
+
+    def test_fields_are_preselected_and_ids_refused(self):
+        note_type = (1001, "Vocab", ("Note ID", "LexiqueFR", "Front", "Back", "ExempleEN"))
+        self.upload(make_apkg({note_type: [
+            ["1461656318080", "université", "a university", "une université", "She went to university."],
+            ["1461656318090", "université", "a campus", "un campus", ""],
+        ]}))
+        form = self.client.get(self.map_url).context["form"]
+        self.assertEqual(
+            [form.initial[role] for role in ("question", "answer", "example")], [2, 3, 4]
+        )
+        response = self.client.post(self.map_url, {"note_type": "1001", "question": 0, "answer": 1})
+        self.assertContains(response, "Le champ « Note ID » ne contient presque que des nombres")
+        self.assertEqual(self.deck.cards.count(), 0)
+
+    def test_example_is_optional(self):
+        self.upload(make_apkg({BASIC: [["Cradle", "Berceau", "A cradle"]]}))
+        self.client.post(self.map_url, {"note_type": "1001", "question": 0, "answer": 1, "example": ""})
+        self.assertEqual(self.deck.cards.get().example, "")
+
+    def test_same_field_twice_is_rejected(self):
+        self.upload(make_apkg({BASIC: [["Cradle", "Berceau", ""]]}))
+        response = self.client.post(self.map_url, {"note_type": "1001", "question": 0, "answer": 0})
+        self.assertContains(response, "Choisissez un champ différent pour chaque rôle.")
+        self.assertEqual(self.deck.cards.count(), 0)
+
+    def test_choose_another_note_type(self):
+        other = (2002, "Vocab", ("Word", "Meaning"))
+        self.upload(make_apkg({BASIC: [["a", "b", ""], ["c", "d", ""]], other: [["comer", "manger"]]}))
+        response = self.client.get(self.map_url)
+        self.assertEqual(response.context["note_type"]["name"], "Basic")
+        response = self.client.get(self.map_url, {"note_type": "2002"})
+        self.assertContains(response, "Word — « comer »")
+        self.client.post(self.map_url, {"note_type": "2002", "question": 0, "answer": 1})
+        self.assertEqual(list(self.deck.cards.values_list("question", flat=True)), ["comer"])
+
+    def test_upload_errors_are_shown(self):
+        response = self.upload(SimpleUploadedFile("deck.txt", b"Hectic;Intense"))
+        self.assertContains(response, "Choisissez un fichier .apkg.")
+        response = self.upload(SimpleUploadedFile("deck.apkg", b"not a zip"))
+        self.assertContains(response, "pas un paquet Anki")
+
+    def test_mapping_without_upload_goes_back_to_upload(self):
+        self.assertRedirects(self.client.get(self.map_url), self.upload_url)
+
+    def test_pending_import_is_tied_to_its_deck(self):
+        self.upload(make_apkg({BASIC: [["Cradle", "Berceau", ""]]}))
+        other_deck = Deck.objects.create(name="Other", language="en", owner=self.user)
+        other_map_url = reverse("anki-map", args=[other_deck.pk])
+        self.assertRedirects(
+            self.client.get(other_map_url), reverse("anki-upload", args=[other_deck.pk])
+        )
 
 
 class SignUpTests(TestCase):

@@ -13,3 +13,6 @@ db.sqlite3*
 # IDE
 .idea/
 .vscode/
+
+# Local data (downloaded decks, imports): never publish
+DATAS/

@@ -5,6 +5,7 @@ import io
 
 from django import forms
 
+from . import anki
 from .models import Card
 
 
@@ -83,3 +84,69 @@ class CardImportForm(forms.Form):
             except UnicodeDecodeError:
                 pass
         raise forms.ValidationError("Encodage du fichier non reconnu : enregistrez-le en UTF-8.")
+
+
+class AnkiUploadForm(forms.Form):
+    MAX_FILE_SIZE = 300 * 1024 * 1024
+
+    apkg_file = forms.FileField(
+        label="Paquet Anki (.apkg)",
+        help_text="Fichier téléchargé depuis AnkiWeb ou exporté depuis Anki. 300 Mo au maximum.",
+        widget=forms.ClearableFileInput(attrs={"accept": ".apkg"}),
+    )
+
+    def clean_apkg_file(self):
+        """Return the package's note types (see anki.read_apkg)."""
+        uploaded = self.cleaned_data["apkg_file"]
+        if not uploaded.name.lower().endswith(".apkg"):
+            raise forms.ValidationError("Choisissez un fichier .apkg.")
+        if uploaded.size > self.MAX_FILE_SIZE:
+            raise forms.ValidationError("Le fichier dépasse 300 Mo.")
+        try:
+            return anki.read_apkg(uploaded)
+        except anki.AnkiImportError as error:
+            raise forms.ValidationError(str(error)) from error
+
+
+class AnkiMappingForm(forms.Form):
+    """Choose which Anki fields become the question, answer and example."""
+
+    question = forms.TypedChoiceField(label="Question (langue étudiée)", coerce=int)
+    answer = forms.TypedChoiceField(label="Réponse (traduction)", coerce=int)
+    example = forms.TypedChoiceField(
+        label="Exemple", coerce=int, empty_value=None, required=False
+    )
+
+    def __init__(self, *args, field_names, notes, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.field_names = field_names
+        self.numeric = anki.numeric_fields(notes)
+        # Show each field with its first non-empty value, to tell them apart
+        sample = [
+            next((note[index] for note in notes if note[index]), "")
+            for index in range(len(field_names))
+        ]
+        choices = [
+            (index, f"{name} — « {value[:40]}{'…' if len(value) > 40 else ''} »" if value else name)
+            for index, (name, value) in enumerate(zip(field_names, sample))
+        ]
+        self.fields["question"].choices = choices
+        self.fields["answer"].choices = choices
+        self.fields["example"].choices = [("", "— Aucun —")] + choices
+        for role, index in anki.suggest_mapping(field_names, notes).items():
+            self.initial.setdefault(role, index)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for role in ("question", "answer"):
+            index = cleaned_data.get(role)
+            if index in self.numeric:
+                self.add_error(role, (
+                    f"Le champ « {self.field_names[index]} » ne contient presque que des "
+                    "nombres : c'est sans doute un identifiant. Choisissez un autre champ."
+                ))
+        chosen = [cleaned_data.get(name) for name in ("question", "answer", "example")]
+        chosen = [index for index in chosen if index is not None]
+        if len(chosen) != len(set(chosen)):
+            raise forms.ValidationError("Choisissez un champ différent pour chaque rôle.")
+        return cleaned_data

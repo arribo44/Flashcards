@@ -24,9 +24,9 @@ from django.views.generic import (
     UpdateView,
 )
 
-from . import stats
+from . import anki, stats
 from .models import BOXES, Card, Deck, Review
-from .forms import CardCheckForm, CardImportForm
+from .forms import AnkiMappingForm, AnkiUploadForm, CardCheckForm, CardImportForm
 
 
 STUDY_DIRECTIONS = {
@@ -60,10 +60,24 @@ class DeckListView(LoginRequiredMixin, ListView):
             due_count=Count(
                 "cards", filter=Q(cards__due_date__lte=timezone.localdate())
             ),
+            **{
+                f"box_{box}": Count("cards", filter=Q(cards__box=box))
+                for box in BOXES
+            },
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        for deck in context["deck_list"]:
+            deck.box_shares = [
+                {
+                    "number": box,
+                    "count": getattr(deck, f"box_{box}"),
+                    "percent": 100 * getattr(deck, f"box_{box}") / deck.card_count
+                    if deck.card_count else 0,
+                }
+                for box in BOXES
+            ]
         days = stats.review_days(Review.objects.filter(deck__owner=self.request.user))
         context["streak"] = stats.current_streak(days, timezone.localdate())
         return context
@@ -230,6 +244,32 @@ class CardDeleteView(SuccessMessageMixin, UserDeckMixin, DeleteView):
         return f"Carte « {self.object.question} » supprimée."
 
 
+def add_cards(deck, rows):
+    """Create cards from (question, answer, example) rows, skipping known questions.
+
+    Return the number of cards created.
+    """
+    known_questions = set(deck.cards.values_list("question", flat=True))
+    new_cards = []
+    for question, answer, example in rows:
+        if question not in known_questions:
+            known_questions.add(question)
+            new_cards.append(Card(deck=deck, question=question, answer=answer, example=example))
+    Card.objects.bulk_create(new_cards)
+    return len(new_cards)
+
+
+def import_summary(imported, **skipped):
+    """Build e.g. "12 cartes importées. 2 ignorées (déjà présentes)."."""
+    plural = "s" if imported > 1 else ""
+    message = f"{imported} carte{plural} importée{plural}."
+    for reason, count in skipped.items():
+        if count:
+            plural = "s" if count > 1 else ""
+            message += f" {count} ignorée{plural} ({reason.format(s=plural)})."
+    return message
+
+
 class CardImportView(UserDeckMixin, FormView):
     """Add cards to the deck from a CSV file, skipping questions it already has."""
 
@@ -238,22 +278,94 @@ class CardImportView(UserDeckMixin, FormView):
 
     def form_valid(self, form):
         rows = form.cleaned_data["csv_file"]
-        known_questions = set(self.deck.cards.values_list("question", flat=True))
-        new_cards = []
-        for question, answer, example in rows:
-            if question not in known_questions:
-                known_questions.add(question)
-                new_cards.append(Card(
-                    deck=self.deck, question=question, answer=answer, example=example
-                ))
-        Card.objects.bulk_create(new_cards)
+        imported = add_cards(self.deck, rows)
+        messages.success(
+            self.request,
+            import_summary(imported, **{"déjà présente{s}": len(rows) - imported}),
+        )
+        return redirect("card-list", deck_pk=self.deck.pk)
 
-        imported = len(new_cards)
-        skipped = len(rows) - imported
-        message = f"{imported} carte{'s' if imported > 1 else ''} importée{'s' if imported > 1 else ''}."
-        if skipped:
-            message += f" {skipped} ignorée{'s' if skipped > 1 else ''} (déjà présente{'s' if skipped > 1 else ''})."
-        messages.success(self.request, message)
+
+ANKI_SESSION_KEY = "anki_import"
+
+
+class AnkiUploadView(UserDeckMixin, FormView):
+    """First step of an Anki import: read the .apkg and keep its notes in the session."""
+
+    form_class = AnkiUploadForm
+    template_name = "cards/anki_upload.html"
+
+    def form_valid(self, form):
+        self.request.session[ANKI_SESSION_KEY] = {
+            "deck": self.deck.pk,
+            "file_name": self.request.FILES["apkg_file"].name,
+            "note_types": form.cleaned_data["apkg_file"],
+        }
+        return redirect("anki-map", deck_pk=self.deck.pk)
+
+
+class AnkiMapView(UserDeckMixin, FormView):
+    """Second step: pick the note type and the fields to use, then create the cards."""
+
+    form_class = AnkiMappingForm
+    template_name = "cards/anki_map.html"
+    PREVIEW_SIZE = 5
+
+    def dispatch(self, request, *args, **kwargs):
+        pending = request.session.get(ANKI_SESSION_KEY)
+        if request.user.is_authenticated and (
+            not pending or pending["deck"] != kwargs["deck_pk"]
+        ):
+            return redirect("anki-upload", deck_pk=kwargs["deck_pk"])
+        self.pending = pending
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_note_type(self):
+        note_types = self.pending["note_types"]
+        wanted = self.request.POST.get("note_type") or self.request.GET.get("note_type")
+        return next((nt for nt in note_types if nt["id"] == wanted), note_types[0])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        note_type = self.get_note_type()
+        kwargs.update(field_names=note_type["fields"], notes=note_type["notes"])
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        note_type = self.get_note_type()
+        context["note_type"] = note_type
+        context["note_types"] = self.pending["note_types"]
+        context["file_name"] = self.pending["file_name"]
+        context["preview"] = note_type["notes"][:self.PREVIEW_SIZE]
+        return context
+
+    def form_valid(self, form):
+        note_type = self.get_note_type()
+        q, a, ex = (form.cleaned_data[name] for name in ("question", "answer", "example"))
+        limits = {
+            name: Card._meta.get_field(name).max_length
+            for name in ("question", "answer", "example")
+        }
+        rows, empty, too_long = [], 0, 0
+        for note in note_type["notes"]:
+            question, answer = note[q], note[a]
+            # The example is optional: shorten it rather than lose the card
+            example = anki.shorten(note[ex], limits["example"]) if ex is not None else ""
+            if not question or not answer:
+                empty += 1
+            elif len(question) > limits["question"] or len(answer) > limits["answer"]:
+                too_long += 1
+            else:
+                rows.append((question, answer, example))
+
+        imported = add_cards(self.deck, rows)
+        del self.request.session[ANKI_SESSION_KEY]
+        messages.success(self.request, import_summary(imported, **{
+            "déjà présente{s}": len(rows) - imported,
+            "question ou réponse vide": empty,
+            "trop longue{s}": too_long,
+        }))
         return redirect("card-list", deck_pk=self.deck.pk)
 
 

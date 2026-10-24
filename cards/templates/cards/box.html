@@ -1,9 +1,17 @@
-<!-- templates/cards/box.html -->
+<!-- cards/templates/cards/box.html -->
 
 {% extends "cards/base.html" %}
 
+{% block title %}Boîte {{ box_number }} · {{ deck.name }}{% endblock %}
+{% block page_title %}
+    <span class="badge box-swatch box-{{ box_number }} me-2 align-middle">{{ box_number }}</span>Boîte {{ box_number }}
+    <small class="text-secondary fs-6 ms-2">{{ box_total }} carte{{ box_total | pluralize }} dans cette boîte</small>
+{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Boîte {{ box_number }}</li>
+{% endblock %}
+
 {% block content %}
-    <h2>🗃 Boîte {{ box_number }}</h2>
-    <p>{{ box_total }} carte{{ box_total | pluralize }} dans cette boîte.</p>
     {% include "cards/review.html" %}
 {% endblock content %}

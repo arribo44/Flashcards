@@ -1,19 +1,41 @@
 <!-- cards/templates/cards/card_form.html -->
 
 {% extends "cards/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if card %}Modifier la carte{% else %}Nouvelle carte{% endif %}{% endblock %}
+{% block page_title %}{% if card %}Modifier la carte{% else %}Nouvelle carte{% endif %}{% endblock %}
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if card %}Modifier{% else %}Nouvelle carte{% endif %}</li>
+{% endblock %}
 
 {% block content %}
-    {% if card %}
-        <h2>✏️ Modifier la carte</h2>
-    {% else %}
-        <h2>✨ Nouvelle carte</h2>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Enregistrer">
-    </form>
-    <a href="{% url 'card-list' deck.pk %}">
-        Annuler
-    </a>
+    <div class="row">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card card-primary card-outline">
+                <form method="post">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Enregistrer</button>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                        {% if card %}
+                            <a href="{% url 'card-delete' deck.pk card.pk %}" class="btn btn-outline-danger ms-auto">
+                                <i class="bi bi-trash me-1"></i> Supprimer
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            {% if not card %}
+                <p class="small text-secondary mt-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Après l'enregistrement, le formulaire se réaffiche pour saisir la carte suivante.
+                </p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

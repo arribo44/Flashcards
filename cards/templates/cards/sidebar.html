@@ -1,0 +1,95 @@
+<!-- cards/templates/cards/sidebar.html -->
+
+{% load cards_tags %}
+
+<nav class="mt-2" aria-label="Menu principal">
+    <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false" id="navigation">
+        <li class="nav-item">
+            <a href="{% url 'deck-list' %}" class="nav-link{% if url_name == 'deck-list' %} active{% endif %}">
+                <i class="nav-icon bi bi-collection"></i>
+                <p>Mes paquets</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'stats' %}" class="nav-link{% if url_name == 'stats' %} active{% endif %}">
+                <i class="nav-icon bi bi-bar-chart-line"></i>
+                <p>Statistiques</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'deck-create' %}" class="nav-link{% if url_name == 'deck-create' %} active{% endif %}">
+                <i class="nav-icon bi bi-plus-circle"></i>
+                <p>Nouveau paquet</p>
+            </a>
+        </li>
+
+        {% if decks %}
+            <li class="nav-header">PAQUETS</li>
+        {% endif %}
+        {% for deck in decks %}
+            {% if current_deck and deck.pk == current_deck.pk %}
+                <li class="nav-item menu-open">
+                    <a href="#" class="nav-link active">
+                        <i class="nav-icon bi bi-journal-bookmark-fill"></i>
+                        <p>
+                            {{ deck.name }}
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{% url 'study' deck.pk %}" class="nav-link{% if url_name == 'study' %} active{% endif %}">
+                                <i class="nav-icon bi bi-bullseye"></i>
+                                <p>
+                                    Réviser
+                                    {% if deck.due_count %}<span class="nav-badge badge text-bg-warning me-3">{{ deck.due_count }}</span>{% endif %}
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'card-list' deck.pk %}" class="nav-link{% if url_name == 'card-list' %} active{% endif %}">
+                                <i class="nav-icon bi bi-card-list"></i>
+                                <p>Cartes</p>
+                            </a>
+                        </li>
+                        {% boxes_as_links deck %}
+                        <li class="nav-item">
+                            <a href="{% url 'card-create' deck.pk %}" class="nav-link{% if url_name == 'card-create' %} active{% endif %}">
+                                <i class="nav-icon bi bi-plus-lg"></i>
+                                <p>Nouvelle carte</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'card-import' deck.pk %}" class="nav-link{% if url_name == 'card-import' %} active{% endif %}">
+                                <i class="nav-icon bi bi-filetype-csv"></i>
+                                <p>Importer un CSV</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'anki-upload' deck.pk %}" class="nav-link{% if url_name == 'anki-upload' or url_name == 'anki-map' %} active{% endif %}">
+                                <i class="nav-icon bi bi-box-seam"></i>
+                                <p>Importer Anki</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'deck-update' deck.pk %}" class="nav-link{% if url_name == 'deck-update' %} active{% endif %}">
+                                <i class="nav-icon bi bi-gear"></i>
+                                <p>Paramètres</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a href="{% url 'card-list' deck.pk %}" class="nav-link">
+                        <i class="nav-icon bi bi-journal-bookmark"></i>
+                        <p>
+                            {{ deck.name }}
+                            {% if deck.due_count %}<span class="nav-badge badge text-bg-secondary me-3">{{ deck.due_count }}</span>{% endif %}
+                        </p>
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>

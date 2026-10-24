@@ -56,6 +56,16 @@ urlpatterns = [
         name="card-import"
     ),
     path(
+        "decks/<int:deck_pk>/anki",
+        views.AnkiUploadView.as_view(),
+        name="anki-upload"
+    ),
+    path(
+        "decks/<int:deck_pk>/anki/fields",
+        views.AnkiMapView.as_view(),
+        name="anki-map"
+    ),
+    path(
         "decks/<int:deck_pk>/study",
         views.StudyView.as_view(),
         name="study"

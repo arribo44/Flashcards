@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
@@ -50,6 +51,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'cards.apps.CardsConfig',
 ]
 
@@ -113,6 +116,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# Forms are rendered with Bootstrap 5 (AdminLTE) markup
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+# Bootstrap alert colours for flash messages
+MESSAGE_TAGS = {messages.ERROR: 'danger'}
 
 LOGIN_REDIRECT_URL = 'deck-list'
 LOGOUT_REDIRECT_URL = 'login'

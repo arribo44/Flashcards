@@ -1,0 +1,48 @@
+<!-- cards/templates/cards/review_card.html -->
+
+<p class="text-secondary small text-uppercase mb-2">
+    {% if reverse %}Traduisez en {{ deck.get_language_display|lower }}{% else %}Que signifie…{% endif %}
+</p>
+{% if reverse %}
+    <h2 class="review-question">{{ card.answer }}</h2>
+{% else %}
+    <h2 class="review-question">
+        {{ card.question }}
+        {% include "cards/speak_button.html" with text=card.question %}
+    </h2>
+{% endif %}
+
+{% if answer_mode == "type" %}
+    <form class="type-answer mx-auto mt-4" style="max-width: 28rem" hidden
+          data-expected="{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}">
+        <div class="input-group input-group-lg">
+            <input type="text" name="typed" class="form-control" placeholder="Votre réponse" aria-label="Votre réponse"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button type="submit" class="btn btn-primary">Vérifier</button>
+        </div>
+    </form>
+    <div class="verdict alert mx-auto mt-3 mb-0" style="max-width: 28rem" role="status" hidden></div>
+{% endif %}
+
+<details class="answer mt-4">
+    <summary class="btn btn-outline-primary btn-lg px-4">
+        <i class="bi bi-eye me-1"></i> Afficher la réponse
+    </summary>
+    <div class="border-top pt-4">
+        {% if reverse %}
+            <p class="review-answer mb-2">
+                {{ card.question }}
+                {% include "cards/speak_button.html" with text=card.question %}
+            </p>
+        {% else %}
+            <p class="review-answer mb-2">{{ card.answer }}</p>
+        {% endif %}
+        {% if card.example %}
+            {% include "cards/example_lines.html" with class="review-example" %}
+        {% endif %}
+        <div class="answer-buttons row g-2 mt-3 mx-auto" style="max-width: 32rem">
+            <div class="col-6">{% include "cards/card_check_form.html" with solved=True %}</div>
+            <div class="col-6">{% include "cards/card_check_form.html" with solved=False %}</div>
+        </div>
+    </div>
+</details>
