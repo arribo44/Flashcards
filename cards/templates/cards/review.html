@@ -1,0 +1,23 @@
+<!-- cards/templates/cards/review.html -->
+
+{% load humanize %}
+
+<p>
+    {% for key, label in directions.items %}
+        {% if key == direction %}
+            <mark>{{ label }}</mark>
+        {% else %}
+            <a href="?direction={{ key }}">{{ label }}</a>
+        {% endif %}
+    {% endfor %}
+</p>
+<mark>{{ object_list | length }}</mark> card{{ object_list | pluralize }} due today.
+<hr>
+{% if check_card %}
+    {% include "cards/card.html" with card=check_card %}
+{% else %}
+    <p>
+        🎉 Nothing left to review here today.
+        {% if next_due %}Next review: {{ next_due | naturalday }}.{% endif %}
+    </p>
+{% endif %}

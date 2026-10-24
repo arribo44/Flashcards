@@ -36,6 +36,11 @@ urlpatterns = [
         name="card-update"
     ),
     path(
+        "decks/<int:deck_pk>/study",
+        views.StudyView.as_view(),
+        name="study"
+    ),
+    path(
         "decks/<int:deck_pk>/box/<int:box_num>",
         views.BoxView.as_view(),
         name="box"

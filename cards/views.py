@@ -5,8 +5,9 @@ import random
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.db.models import Count, Min, Q
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 
 from django.shortcuts import get_object_or_404, redirect
 
@@ -18,6 +19,13 @@ from django.views.generic import (
 
 from .models import Card, Deck
 from .forms import CardCheckForm
+
+
+STUDY_DIRECTIONS = {
+    "forward": "Question → Answer",
+    "reverse": "Answer → Question",
+    "mixed": "Mixed",
+}
 
 
 class SignUpView(CreateView):
@@ -34,7 +42,12 @@ class DeckListView(LoginRequiredMixin, ListView):
     model = Deck
 
     def get_queryset(self):
-        return self.request.user.decks.annotate(card_count=Count("cards"))
+        return self.request.user.decks.annotate(
+            card_count=Count("cards"),
+            due_count=Count(
+                "cards", filter=Q(cards__due_date__lte=timezone.localdate())
+            ),
+        )
 
 
 class DeckCreateView(LoginRequiredMixin, CreateView):
@@ -104,20 +117,42 @@ class CardUpdateView(UserDeckMixin, UpdateView):
         return reverse("card-list", args=[self.deck.pk])
 
 
-class BoxView(CardListView):
-    template_name = "cards/box.html"
+class StudyView(UserDeckMixin, ListView):
+    """Quiz the user on a random card that is due today."""
+
+    model = Card
+    template_name = "cards/study.html"
     form_class = CardCheckForm
 
+    def get_cards(self):
+        return self.deck.cards.all()
+
     def get_queryset(self):
-        return self.deck.cards.filter(box=self.kwargs["box_num"])
+        return self.get_cards().filter(due_date__lte=timezone.localdate())
+
+    def get_direction(self):
+        direction = self.request.GET.get("direction")
+        if direction in STUDY_DIRECTIONS:
+            self.request.session["study_direction"] = direction
+        return self.request.session.get("study_direction", "forward")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["box_number"] = self.kwargs["box_num"]
+        direction = self.get_direction()
+        context["direction"] = direction
+        context["directions"] = STUDY_DIRECTIONS
         if self.object_list:
             context["check_card"] = random.choice(self.object_list)
+            context["reverse"] = direction == "reverse" or (
+                direction == "mixed" and random.random() < 0.5
+            )
+        else:
+            context["next_due"] = (
+                self.get_cards()
+                .filter(due_date__gt=timezone.localdate())
+                .aggregate(Min("due_date"))["due_date__min"]
+            )
         return context
-
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
@@ -125,4 +160,17 @@ class BoxView(CardListView):
             card = get_object_or_404(self.deck.cards, id=form.cleaned_data["card_id"])
             card.move(form.cleaned_data["solved"])
 
-        return redirect("box", deck_pk=self.deck.pk, box_num=self.kwargs["box_num"])
+        return redirect(request.path)
+
+
+class BoxView(StudyView):
+    template_name = "cards/box.html"
+
+    def get_cards(self):
+        return self.deck.cards.filter(box=self.kwargs["box_num"])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["box_number"] = self.kwargs["box_num"]
+        context["box_total"] = self.get_cards().count()
+        return context

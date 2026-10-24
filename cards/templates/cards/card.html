@@ -1,9 +1,24 @@
 <!-- cards/templates/cards/card.html -->
 
+{% load humanize %}
+
 <article>
-   <h4>{{ card.question }}</h4>
+    {% if check_card and reverse %}
+        <h4>{{ card.answer }}</h4>
+    {% else %}
+        <h4>{{ card.question }}</h4>
+    {% endif %}
     {% if not check_card %}
         <p>{{ card.answer }}</p>
+        <p>
+            <small>
+                {% if card.is_due %}
+                    Due today
+                {% else %}
+                    Next review: {{ card.due_date | naturalday }}
+                {% endif %}
+            </small>
+        </p>
         <hr>
         <a href="{% url 'card-update' card.deck_id card.id %}" role="button">
             ✏️ Edit Card
@@ -11,7 +26,7 @@
     {% else %}
         <details>
             <summary>Reveal Answer</summary>
-            <p>{{ card.answer }}</p>
+            <p>{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}</p>
         </details>
         <hr>
         {% include "cards/card_check_form.html" with solved=True %}

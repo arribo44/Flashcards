@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Card, Deck, NUM_BOXES
+from .models import Card, Deck, NUM_BOXES, REVIEW_INTERVALS
 
 
 class CardMoveTests(TestCase):
@@ -22,6 +25,24 @@ class CardMoveTests(TestCase):
         card = Card.objects.create(deck=self.deck, question="q", answer="a", box=NUM_BOXES)
         self.assertEqual(card.move(True).box, NUM_BOXES)
 
+    def test_new_card_is_due_today(self):
+        card = Card.objects.create(deck=self.deck, question="q", answer="a")
+        self.assertTrue(card.is_due)
+
+    def test_move_schedules_next_review(self):
+        today = timezone.localdate()
+        card = Card.objects.create(deck=self.deck, question="q", answer="a", box=2)
+        card.move(True)
+        card.refresh_from_db()
+        self.assertEqual(card.due_date, today + timedelta(days=REVIEW_INTERVALS[3]))
+        self.assertFalse(card.is_due)
+        self.assertIsNotNone(card.last_reviewed)
+
+    def test_failed_card_is_due_again_today(self):
+        card = Card.objects.create(deck=self.deck, question="q", answer="a", box=4)
+        card.move(False)
+        self.assertTrue(card.is_due)
+
 
 class AccessTests(TestCase):
     def setUp(self):
@@ -38,6 +59,7 @@ class AccessTests(TestCase):
             reverse("card-create", args=[self.deck.pk]),
             reverse("card-update", args=[self.deck.pk, self.card.pk]),
             reverse("box", args=[self.deck.pk, 1]),
+            reverse("study", args=[self.deck.pk]),
             reverse("deck-update", args=[self.deck.pk]),
         ]
 
@@ -90,6 +112,62 @@ class AccessTests(TestCase):
             {"question": "comer", "answer": "manger", "box": 1},
         )
         self.assertTrue(deck.cards.filter(question="comer").exists())
+
+
+class StudyTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("alice", password="pw")
+        self.deck = Deck.objects.create(name="Words", language="en", owner=self.user)
+        self.client.force_login(self.user)
+        self.url = reverse("study", args=[self.deck.pk])
+
+    def add_card(self, question, answer, box=1, days=0):
+        return Card.objects.create(
+            deck=self.deck, question=question, answer=answer, box=box,
+            due_date=timezone.localdate() + timedelta(days=days),
+        )
+
+    def test_only_due_cards_are_offered(self):
+        due = self.add_card("hectic", "intense", box=3, days=-2)
+        self.add_card("cradle", "berceau", box=2, days=1)
+        response = self.client.get(self.url)
+        self.assertEqual(list(response.context["object_list"]), [due])
+        self.assertEqual(response.context["check_card"], due)
+
+    def test_shows_next_review_when_nothing_due(self):
+        later = self.add_card("cradle", "berceau", box=2, days=3)
+        response = self.client.get(self.url)
+        self.assertNotIn("check_card", response.context)
+        self.assertEqual(response.context["next_due"], later.due_date)
+
+    def test_box_view_only_shows_due_cards_of_that_box(self):
+        due = self.add_card("hectic", "intense", box=2)
+        self.add_card("cradle", "berceau", box=2, days=1)
+        self.add_card("grave", "tombe", box=3)
+        response = self.client.get(reverse("box", args=[self.deck.pk, 2]))
+        self.assertEqual(list(response.context["object_list"]), [due])
+        self.assertEqual(response.context["box_total"], 2)
+
+    def test_known_card_leaves_todays_review(self):
+        card = self.add_card("hectic", "intense")
+        response = self.client.post(self.url, {"card_id": card.pk, "solved": "True"})
+        self.assertRedirects(response, self.url)
+        response = self.client.get(self.url)
+        self.assertNotIn("check_card", response.context)
+
+    def test_reverse_direction_is_remembered(self):
+        self.add_card("hectic", "intense")
+        response = self.client.get(self.url + "?direction=reverse")
+        self.assertTrue(response.context["reverse"])
+        self.assertContains(response, "<h4>intense</h4>", html=True)
+        response = self.client.get(self.url)
+        self.assertTrue(response.context["reverse"])
+
+    def test_unknown_direction_is_ignored(self):
+        self.add_card("hectic", "intense")
+        response = self.client.get(self.url + "?direction=bogus")
+        self.assertEqual(response.context["direction"], "forward")
+        self.assertFalse(response.context["reverse"])
 
 
 class SignUpTests(TestCase):

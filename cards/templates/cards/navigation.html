@@ -7,6 +7,7 @@
         <a href="{% url 'deck-list' %}">📚 My Decks</a>
         {% if deck.pk %}
             <a href="{% url 'card-list' deck.pk %}">🗂 {{ deck.name }}</a>
+            <a href="{% url 'study' deck.pk %}">🎯 Review</a>
             {% boxes_as_links deck %}
         {% endif %}
         <form method="post" action="{% url 'logout' %}" class="logout">
