@@ -1,1 +1,14 @@
+# Virtual environments
 /venv/
+/.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local data and secrets
+db.sqlite3
+.env
+
+# IDE
+.idea/

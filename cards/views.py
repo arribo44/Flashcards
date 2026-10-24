@@ -48,4 +48,4 @@ class BoxView(CardListView):
             card = get_object_or_404(Card, id=form.cleaned_data["card_id"])
             card.move(form.cleaned_data["solved"])
 
-        return redirect(request.META.get("HTTP_REFERER"))
+        return redirect("box", box_num=self.kwargs["box_num"])
