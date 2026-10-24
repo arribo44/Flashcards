@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -60,7 +61,10 @@ class AccessTests(TestCase):
             reverse("card-update", args=[self.deck.pk, self.card.pk]),
             reverse("box", args=[self.deck.pk, 1]),
             reverse("study", args=[self.deck.pk]),
+            reverse("card-delete", args=[self.deck.pk, self.card.pk]),
+            reverse("card-import", args=[self.deck.pk]),
             reverse("deck-update", args=[self.deck.pk]),
+            reverse("deck-delete", args=[self.deck.pk]),
         ]
 
     def test_anonymous_is_redirected_to_login(self):
@@ -112,6 +116,23 @@ class AccessTests(TestCase):
             {"question": "comer", "answer": "manger", "box": 1},
         )
         self.assertTrue(deck.cards.filter(question="comer").exists())
+
+    def test_cannot_delete_another_users_card_or_deck(self):
+        self.client.force_login(self.bob)
+        self.client.post(reverse("card-delete", args=[self.deck.pk, self.card.pk]))
+        self.client.post(reverse("card-delete", args=[self.bob_deck.pk, self.card.pk]))
+        self.client.post(reverse("deck-delete", args=[self.deck.pk]))
+        self.assertTrue(Card.objects.filter(pk=self.card.pk).exists())
+        self.assertTrue(Deck.objects.filter(pk=self.deck.pk).exists())
+
+    def test_owner_can_delete_card_then_deck(self):
+        self.client.force_login(self.alice)
+        response = self.client.post(reverse("card-delete", args=[self.deck.pk, self.card.pk]))
+        self.assertRedirects(response, reverse("card-list", args=[self.deck.pk]))
+        self.assertFalse(Card.objects.filter(pk=self.card.pk).exists())
+        response = self.client.post(reverse("deck-delete", args=[self.deck.pk]), follow=True)
+        self.assertFalse(Deck.objects.filter(pk=self.deck.pk).exists())
+        self.assertContains(response, "Paquet « Alice EN » supprimé.")
 
 
 class StudyTests(TestCase):
@@ -175,6 +196,58 @@ class StudyTests(TestCase):
         response = self.client.get(self.url + "?direction=bogus")
         self.assertEqual(response.context["direction"], "forward")
         self.assertFalse(response.context["reverse"])
+
+
+class ImportTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("alice", password="pw")
+        self.deck = Deck.objects.create(name="Words", language="en", owner=self.user)
+        self.client.force_login(self.user)
+        self.url = reverse("card-import", args=[self.deck.pk])
+
+    def upload(self, content, encoding="utf-8"):
+        csv_file = SimpleUploadedFile("cards.csv", content.encode(encoding), "text/csv")
+        return self.client.post(self.url, {"csv_file": csv_file}, follow=True)
+
+    def cards(self):
+        return list(self.deck.cards.order_by("pk").values_list("question", "answer", "box"))
+
+    def test_semicolon_file_with_header(self):
+        self.upload("question;réponse\nHectic;Intense\nTo sprinkle;Saupoudrer\n")
+        self.assertEqual(self.cards(), [("Hectic", "Intense", 1), ("To sprinkle", "Saupoudrer", 1)])
+
+    def test_comma_file_with_quotes_and_blank_lines(self):
+        self.upload('Fancy,Sophistiqué\n\n"To jiggle","Se trémousser, gigoter"\n')
+        self.assertEqual(self.cards(), [("Fancy", "Sophistiqué", 1),
+                                        ("To jiggle", "Se trémousser, gigoter", 1)])
+
+    def test_excel_cp1252_file(self):
+        self.upload("Cradle;Berceau\r\nUndeniable;Indéniable\r\n", encoding="cp1252")
+        self.assertEqual(self.cards()[1], ("Undeniable", "Indéniable", 1))
+
+    def test_imported_cards_are_due_today(self):
+        self.upload("Hectic;Intense\n")
+        self.assertTrue(self.deck.cards.get().is_due)
+
+    def test_existing_and_repeated_questions_are_skipped(self):
+        Card.objects.create(deck=self.deck, question="Hectic", answer="Intense")
+        response = self.upload("Hectic;Mouvementé\nGrave;Tombe\nGrave;Tombe\n")
+        self.assertEqual(self.deck.cards.count(), 2)
+        self.assertContains(response, "1 carte importée. 2 ignorées (déjà présentes).")
+
+    def test_invalid_line_imports_nothing(self):
+        response = self.upload("Hectic;Intense\nGrave\n")
+        self.assertEqual(self.deck.cards.count(), 0)
+        self.assertContains(response, "Ligne 2 : il faut une question et une réponse.")
+
+    def test_too_long_field_is_rejected(self):
+        response = self.upload("Hectic;" + "x" * 101 + "\n")
+        self.assertEqual(self.deck.cards.count(), 0)
+        self.assertContains(response, "Ligne 1 : 100 caractères maximum par champ.")
+
+    def test_empty_file_is_rejected(self):
+        response = self.upload("question;réponse\n")
+        self.assertContains(response, "Le fichier ne contient aucune carte.")
 
 
 class SignUpTests(TestCase):

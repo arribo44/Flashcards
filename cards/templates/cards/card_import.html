@@ -1,0 +1,25 @@
+<!-- cards/templates/cards/card_import.html -->
+
+{% extends "cards/base.html" %}
+
+{% block content %}
+    <h2>📥 Importer des cartes</h2>
+    <p>
+        Ajoutez plusieurs cartes d'un coup dans « {{ deck.name }} » depuis un
+        fichier CSV (exporté d'un tableur, par exemple). Les nouvelles cartes
+        arrivent dans la boîte 1 ; celles dont la question existe déjà dans le
+        paquet sont ignorées. Si une ligne est invalide, rien n'est importé.
+    </p>
+    <p>Exemple :</p>
+    <pre>question;réponse
+Hectic;Intense
+To sprinkle;Saupoudrer</pre>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Importer">
+    </form>
+    <a href="{% url 'card-list' deck.pk %}">
+        Annuler
+    </a>
+{% endblock %}

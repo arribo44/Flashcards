@@ -10,6 +10,9 @@
     <a href="{% url 'card-create' deck.pk %}" role="button">
         ✨ Nouvelle carte
     </a>
+    <a href="{% url 'card-import' deck.pk %}" role="button">
+        📥 Importer un CSV
+    </a>
     {% for card in card_list %}
         {% ifchanged %}
             <h3>🗃 Boîte {{ card.box }}</h3>

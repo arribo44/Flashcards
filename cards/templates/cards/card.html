@@ -23,6 +23,9 @@
         <a href="{% url 'card-update' card.deck_id card.id %}" role="button">
             ✏️ Modifier
         </a>
+        <a href="{% url 'card-delete' card.deck_id card.id %}" role="button">
+            🗑 Supprimer
+        </a>
     {% else %}
         <details class="answer">
             <summary>Afficher la réponse</summary>

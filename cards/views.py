@@ -2,9 +2,11 @@
 
 import random
 
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Min, Q
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -14,11 +16,13 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import (
     ListView,
     CreateView,
+    DeleteView,
+    FormView,
     UpdateView,
 )
 
 from .models import Card, Deck
-from .forms import CardCheckForm
+from .forms import CardCheckForm, CardImportForm
 
 
 STUDY_DIRECTIONS = {
@@ -50,9 +54,10 @@ class DeckListView(LoginRequiredMixin, ListView):
         )
 
 
-class DeckCreateView(LoginRequiredMixin, CreateView):
+class DeckCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = Deck
     fields = ["name", "language"]
+    success_message = "Paquet « %(name)s » créé."
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -62,13 +67,25 @@ class DeckCreateView(LoginRequiredMixin, CreateView):
         return reverse("card-list", args=[self.object.pk])
 
 
-class DeckUpdateView(LoginRequiredMixin, UpdateView):
+class DeckUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = Deck
     fields = ["name", "language"]
     success_url = reverse_lazy("deck-list")
+    success_message = "Paquet « %(name)s » enregistré."
 
     def get_queryset(self):
         return self.request.user.decks.all()
+
+
+class DeckDeleteView(SuccessMessageMixin, LoginRequiredMixin, DeleteView):
+    model = Deck
+    success_url = reverse_lazy("deck-list")
+
+    def get_queryset(self):
+        return self.request.user.decks.annotate(card_count=Count("cards"))
+
+    def get_success_message(self, cleaned_data):
+        return f"Paquet « {self.object.name} » supprimé."
 
 
 class UserDeckMixin(LoginRequiredMixin):
@@ -94,9 +111,10 @@ class CardListView(UserDeckMixin, ListView):
         return self.deck.cards.order_by("box", "-date_created")
 
 
-class CardCreateView(UserDeckMixin, CreateView):
+class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):
     model = Card
     fields = ["question", "answer", "box"]
+    success_message = "Carte « %(question)s » ajoutée."
 
     def form_valid(self, form):
         form.instance.deck = self.deck
@@ -106,15 +124,54 @@ class CardCreateView(UserDeckMixin, CreateView):
         return reverse("card-create", args=[self.deck.pk])
 
 
-class CardUpdateView(UserDeckMixin, UpdateView):
+class CardUpdateView(SuccessMessageMixin, UserDeckMixin, UpdateView):
     model = Card
     fields = ["question", "answer", "box"]
+    success_message = "Carte « %(question)s » enregistrée."
 
     def get_queryset(self):
         return self.deck.cards.all()
 
     def get_success_url(self):
         return reverse("card-list", args=[self.deck.pk])
+
+
+class CardDeleteView(SuccessMessageMixin, UserDeckMixin, DeleteView):
+    model = Card
+
+    def get_queryset(self):
+        return self.deck.cards.all()
+
+    def get_success_url(self):
+        return reverse("card-list", args=[self.deck.pk])
+
+    def get_success_message(self, cleaned_data):
+        return f"Carte « {self.object.question} » supprimée."
+
+
+class CardImportView(UserDeckMixin, FormView):
+    """Add cards to the deck from a CSV file, skipping questions it already has."""
+
+    form_class = CardImportForm
+    template_name = "cards/card_import.html"
+
+    def form_valid(self, form):
+        rows = form.cleaned_data["csv_file"]
+        known_questions = set(self.deck.cards.values_list("question", flat=True))
+        new_cards = []
+        for question, answer in rows:
+            if question not in known_questions:
+                known_questions.add(question)
+                new_cards.append(Card(deck=self.deck, question=question, answer=answer))
+        Card.objects.bulk_create(new_cards)
+
+        imported = len(new_cards)
+        skipped = len(rows) - imported
+        message = f"{imported} carte{'s' if imported > 1 else ''} importée{'s' if imported > 1 else ''}."
+        if skipped:
+            message += f" {skipped} ignorée{'s' if skipped > 1 else ''} (déjà présente{'s' if skipped > 1 else ''})."
+        messages.success(self.request, message)
+        return redirect("card-list", deck_pk=self.deck.pk)
 
 
 class StudyView(UserDeckMixin, ListView):

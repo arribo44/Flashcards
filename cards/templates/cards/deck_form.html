@@ -16,4 +16,10 @@
     <a href="{% url 'deck-list' %}">
         Annuler
     </a>
+    {% if deck %}
+        <hr>
+        <a href="{% url 'deck-delete' deck.pk %}" role="button">
+            🗑 Supprimer ce paquet
+        </a>
+    {% endif %}
 {% endblock %}

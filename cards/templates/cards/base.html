@@ -92,6 +92,9 @@
 
 
     <main>
+        {% for message in messages %}
+            <p class="notice">{{ message }}</p>
+        {% endfor %}
         {% block content %}
             <h2>Bienvenue dans vos flashcards !</h2>
         {% endblock content %}

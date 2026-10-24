@@ -1,0 +1,19 @@
+<!-- cards/templates/cards/card_confirm_delete.html -->
+
+{% extends "cards/base.html" %}
+
+{% block content %}
+    <h2>🗑 Supprimer la carte</h2>
+    <article>
+        <h4>{{ card.question }}</h4>
+        <p>{{ card.answer }}</p>
+    </article>
+    <p>Cette suppression est définitive.</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="🗑 Supprimer définitivement">
+    </form>
+    <a href="{% url 'card-list' deck.pk %}">
+        Annuler
+    </a>
+{% endblock %}

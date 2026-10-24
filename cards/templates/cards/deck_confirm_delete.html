@@ -1,0 +1,19 @@
+<!-- cards/templates/cards/deck_confirm_delete.html -->
+
+{% extends "cards/base.html" %}
+
+{% block content %}
+    <h2>🗑 Supprimer le paquet</h2>
+    <p>
+        Le paquet « {{ deck.name }} » et
+        <strong>ses {{ deck.card_count }} carte{{ deck.card_count | pluralize }}</strong>
+        seront supprimés définitivement.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="🗑 Supprimer définitivement">
+    </form>
+    <a href="{% url 'deck-list' %}">
+        Annuler
+    </a>
+{% endblock %}
