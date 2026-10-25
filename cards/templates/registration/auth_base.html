@@ -1,8 +1,9 @@
 <!-- cards/templates/registration/auth_base.html -->
 
-{% load static %}
+{% load i18n static %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ LANGUAGE_CODE }}">
 
 <head>
     <meta charset="utf-8">
@@ -26,7 +27,8 @@
                 {% block content %}{% endblock content %}
             </div>
         </div>
-        <p class="text-center text-secondary small mt-3">Vocabulaire anglais et espagnol · système de Leitner</p>
+        <p class="text-center text-secondary small mt-3">{% translate "Flashcards de vocabulaire · système de Leitner" %}</p>
+        {% include "cards/language_picker.html" with class="justify-content-center" %}
     </main>
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
 </body>

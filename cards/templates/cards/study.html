@@ -1,12 +1,13 @@
 <!-- cards/templates/cards/study.html -->
 
 {% extends "cards/base.html" %}
+{% load i18n %}
 
-{% block title %}Révision · {{ deck.name }}{% endblock %}
-{% block page_title %}<i class="bi bi-bullseye me-2 text-primary"></i>Révision du jour{% endblock %}
+{% block title %}{% translate "Révision" %} · {{ deck.name }}{% endblock %}
+{% block page_title %}<i class="bi bi-bullseye me-2 text-primary"></i>{% translate "Révision du jour" %}{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Révision</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Révision" %}</li>
 {% endblock %}
 
 {% block content %}

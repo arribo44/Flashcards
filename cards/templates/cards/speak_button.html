@@ -1,4 +1,5 @@
 <!-- cards/templates/cards/speak_button.html -->
 
+{% load i18n %}
 <button type="button" class="speak" data-speak="{{ text }}" data-lang="{{ deck.speech_lang }}"
-        title="Écouter" aria-label="Écouter « {{ text }} »" hidden><i class="bi bi-volume-up"></i></button>
+        title="{% translate 'Écouter' %}" aria-label="{% blocktranslate %}Écouter « {{ text }} »{% endblocktranslate %}" hidden><i class="bi bi-volume-up"></i></button>

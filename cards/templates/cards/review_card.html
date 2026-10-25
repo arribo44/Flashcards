@@ -1,7 +1,9 @@
 <!-- cards/templates/cards/review_card.html -->
 
+{% load i18n %}
+
 <p class="text-secondary small text-uppercase mb-2">
-    {% if reverse %}Traduisez en {{ deck.get_language_display|lower }}{% else %}Que signifie…{% endif %}
+    {% if reverse %}{{ deck.reverse_prompt }}{% else %}{% translate "Que signifie…" %}{% endif %}
 </p>
 {% if reverse %}
     <h2 class="review-question">{{ card.answer }}</h2>
@@ -16,17 +18,21 @@
     <form class="type-answer mx-auto mt-4" style="max-width: 28rem" hidden
           data-expected="{% if reverse %}{{ card.question }}{% else %}{{ card.answer }}{% endif %}">
         <div class="input-group input-group-lg">
-            <input type="text" name="typed" class="form-control" placeholder="Votre réponse" aria-label="Votre réponse"
+            <input type="text" name="typed" class="form-control" placeholder="{% translate 'Votre réponse' %}" aria-label="{% translate 'Votre réponse' %}"
                    autocomplete="off" autocapitalize="off" spellcheck="false">
-            <button type="submit" class="btn btn-primary">Vérifier</button>
+            <button type="submit" class="btn btn-primary">{% translate "Vérifier" %}</button>
         </div>
     </form>
-    <div class="verdict alert mx-auto mt-3 mb-0" style="max-width: 28rem" role="status" hidden></div>
+    {# The script fills in {expected} with the expected answer #}
+    <div class="verdict alert mx-auto mt-3 mb-0" style="max-width: 28rem" role="status" hidden
+         data-correct="{% translate '✅ Correct !' %}"
+         data-accents="{% translate '✅ Presque : attention aux accents (« {expected} »).' %}"
+         data-wrong="{% translate '❌ La réponse attendue était « {expected} ».' %}"></div>
 {% endif %}
 
 <details class="answer mt-4">
     <summary class="btn btn-outline-primary btn-lg px-4">
-        <i class="bi bi-eye me-1"></i> Afficher la réponse
+        <i class="bi bi-eye me-1"></i> {% translate "Afficher la réponse" %}
     </summary>
     <div class="border-top pt-4">
         {% if reverse %}

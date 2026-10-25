@@ -1,36 +1,36 @@
 <!-- cards/templates/cards/sidebar.html -->
 
-{% load cards_tags %}
+{% load i18n cards_tags %}
 
-<nav class="mt-2" aria-label="Menu principal">
+<nav class="mt-2" aria-label="{% translate 'Menu principal' %}">
     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" data-accordion="false" id="navigation">
         <li class="nav-item">
             <a href="{% url 'deck-list' %}" class="nav-link{% if url_name == 'deck-list' %} active{% endif %}">
                 <i class="nav-icon bi bi-collection"></i>
-                <p>Mes paquets</p>
+                <p>{% translate "Mes paquets" %}</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="{% url 'stats' %}" class="nav-link{% if url_name == 'stats' %} active{% endif %}">
                 <i class="nav-icon bi bi-bar-chart-line"></i>
-                <p>Statistiques</p>
+                <p>{% translate "Statistiques" %}</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="{% url 'deck-create' %}" class="nav-link{% if url_name == 'deck-create' %} active{% endif %}">
                 <i class="nav-icon bi bi-plus-circle"></i>
-                <p>Nouveau paquet</p>
+                <p>{% translate "Nouveau paquet" %}</p>
             </a>
         </li>
 
         {% if decks %}
-            <li class="nav-header">PAQUETS</li>
+            <li class="nav-header text-uppercase">{% translate "Paquets" %}</li>
         {% endif %}
         {% for deck in decks %}
             {% if current_deck and deck.pk == current_deck.pk %}
                 <li class="nav-item menu-open">
                     <a href="#" class="nav-link active">
-                        <i class="nav-icon bi bi-journal-bookmark-fill"></i>
+                        <span class="nav-icon">{% include "cards/flag.html" with code=deck.flag label=deck.get_language_display %}</span>
                         <p>
                             {{ deck.name }}
                             <i class="nav-arrow bi bi-chevron-right"></i>
@@ -41,7 +41,7 @@
                             <a href="{% url 'study' deck.pk %}" class="nav-link{% if url_name == 'study' %} active{% endif %}">
                                 <i class="nav-icon bi bi-bullseye"></i>
                                 <p>
-                                    Réviser
+                                    {% translate "Réviser" %}
                                     {% if deck.due_count %}<span class="nav-badge badge text-bg-warning me-3">{{ deck.due_count }}</span>{% endif %}
                                 </p>
                             </a>
@@ -49,32 +49,32 @@
                         <li class="nav-item">
                             <a href="{% url 'card-list' deck.pk %}" class="nav-link{% if url_name == 'card-list' %} active{% endif %}">
                                 <i class="nav-icon bi bi-card-list"></i>
-                                <p>Cartes</p>
+                                <p>{% translate "Cartes" %}</p>
                             </a>
                         </li>
                         {% boxes_as_links deck %}
                         <li class="nav-item">
                             <a href="{% url 'card-create' deck.pk %}" class="nav-link{% if url_name == 'card-create' %} active{% endif %}">
                                 <i class="nav-icon bi bi-plus-lg"></i>
-                                <p>Nouvelle carte</p>
+                                <p>{% translate "Nouvelle carte" %}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'card-import' deck.pk %}" class="nav-link{% if url_name == 'card-import' %} active{% endif %}">
                                 <i class="nav-icon bi bi-filetype-csv"></i>
-                                <p>Importer un CSV</p>
+                                <p>{% translate "Importer un CSV" %}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'anki-upload' deck.pk %}" class="nav-link{% if url_name == 'anki-upload' or url_name == 'anki-map' %} active{% endif %}">
                                 <i class="nav-icon bi bi-box-seam"></i>
-                                <p>Importer Anki</p>
+                                <p>{% translate "Importer Anki" %}</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{% url 'deck-update' deck.pk %}" class="nav-link{% if url_name == 'deck-update' %} active{% endif %}">
                                 <i class="nav-icon bi bi-gear"></i>
-                                <p>Paramètres</p>
+                                <p>{% translate "Paramètres" %}</p>
                             </a>
                         </li>
                     </ul>
@@ -82,7 +82,7 @@
             {% else %}
                 <li class="nav-item">
                     <a href="{% url 'card-list' deck.pk %}" class="nav-link">
-                        <i class="nav-icon bi bi-journal-bookmark"></i>
+                        <span class="nav-icon">{% include "cards/flag.html" with code=deck.flag label=deck.get_language_display %}</span>
                         <p>
                             {{ deck.name }}
                             {% if deck.due_count %}<span class="nav-badge badge text-bg-secondary me-3">{{ deck.due_count }}</span>{% endif %}

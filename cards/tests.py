@@ -10,7 +10,9 @@ import zstandard
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from pathlib import Path
+
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -228,6 +230,21 @@ class StudyTests(TestCase):
         self.assertContains(response, '<h2 class="review-question">intense</h2>', html=True)
         response = self.client.get(self.url)
         self.assertTrue(response.context["reverse"])
+
+    def test_changing_mode_keeps_the_same_card(self):
+        cards = [self.add_card(f"word{i}", f"mot{i}") for i in range(5)]
+        for card in cards:
+            for query in ("?answer_mode=type", "?direction=reverse"):
+                response = self.client.get(f"{self.url}{query}&card={card.pk}")
+                self.assertEqual(response.context["check_card"], card)
+        self.assertContains(response, f"?answer_mode=reveal&amp;card={card.pk}")
+
+    def test_unknown_or_not_due_card_falls_back_to_a_due_one(self):
+        due = self.add_card("hectic", "intense")
+        later = self.add_card("cradle", "berceau", days=3)
+        for card_id in (later.pk, "abc"):
+            response = self.client.get(f"{self.url}?card={card_id}")
+            self.assertEqual(response.context["check_card"], due)
 
     def test_answer_buttons_are_hidden_until_reveal(self):
         self.add_card("hectic", "intense")
@@ -506,6 +523,20 @@ class AnkiReaderTests(TestCase):
             anki.suggest_mapping(fields, notes), {"question": 2, "answer": 3, "example": None}
         )
 
+    def test_suggest_mapping_by_language_names(self):
+        notes = [["la spiaggia", "the beach", "Andiamo in spiaggia?"]] * 3
+        for fields, expected in (
+            (["Italiano", "English", "Esempio"], {"question": 0, "answer": 1, "example": 2}),
+            (["English", "Italiano", "Esempio"], {"question": 1, "answer": 0, "example": 2}),
+            (["Italian", "Front", "Back"], {"question": 0, "answer": 2, "example": None}),
+        ):
+            self.assertEqual(anki.suggest_mapping(fields, notes, "it", "en"), expected)
+        # Names are compared without accents or case
+        self.assertEqual(
+            anki.suggest_mapping(["FRANCAIS", "Español"], [["manger", "comer"]], "es", "fr"),
+            {"question": 1, "answer": 0, "example": None},
+        )
+
     def test_numeric_fields(self):
         notes = [["12", "a", "3"], ["13", "b", ""], ["14", "c", "x"]]
         self.assertEqual(anki.numeric_fields(notes), {0})
@@ -551,6 +582,7 @@ class AnkiReaderTests(TestCase):
             anki.read_apkg(SimpleUploadedFile("deck.apkg", buffer.getvalue()))
 
 
+@override_settings(ANKI_FOLDER=Path("/nonexistent/anki"))
 class AnkiImportViewTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user("alice", password="pw")
@@ -636,6 +668,41 @@ class AnkiImportViewTests(TestCase):
         response = self.upload(SimpleUploadedFile("deck.apkg", b"not a zip"))
         self.assertContains(response, "pas un paquet Anki")
 
+    def test_deck_from_the_anki_folder_needs_no_upload(self):
+        with tempfile.TemporaryDirectory() as folder, override_settings(ANKI_FOLDER=Path(folder)):
+            apkg = make_apkg({BASIC: [["Cradle", "Berceau", ""]]})
+            Path(folder, "english.apkg").write_bytes(apkg.read())
+            Path(folder, "notes.txt").write_text("not a deck")
+            response = self.client.get(self.upload_url)
+            self.assertContains(response, '<option value="english.apkg">')
+            self.assertNotContains(response, "notes.txt")
+
+            response = self.client.post(self.upload_url, {"local_file": "english.apkg"})
+            self.assertRedirects(response, self.map_url)
+            self.assertContains(self.client.get(self.map_url), "english.apkg")
+
+            response = self.client.post(self.upload_url, {"local_file": "../english.apkg"})
+            self.assertContains(response, "Sélectionnez un choix valide")
+            response = self.client.post(
+                self.upload_url, {"local_file": "english.apkg", "apkg_file": make_apkg({BASIC: []})}
+            )
+            self.assertContains(response, "pas les deux")
+
+    def test_mapping_suggests_the_field_named_after_the_deck_language(self):
+        italian = Deck.objects.create(name="Viaggi", language="it", owner=self.user)
+        self.client.post(reverse("anki-upload", args=[italian.pk]), {"apkg_file": make_apkg(
+            {(1001, "Basic", ("English", "Italiano")): [["the beach", "la spiaggia"]]}
+        )})
+        response = self.client.get(reverse("anki-map", args=[italian.pk]))
+        form = response.context["form"]
+        self.assertEqual((form.initial["question"], form.initial["answer"]), (1, 0))
+
+    def test_without_anki_folder_only_upload_is_offered(self):
+        response = self.client.get(self.upload_url)
+        self.assertNotContains(response, 'name="local_file"')
+        response = self.client.post(self.upload_url, {})
+        self.assertContains(response, "Choisissez un paquet Anki (.apkg).")
+
     def test_mapping_without_upload_goes_back_to_upload(self):
         self.assertRedirects(self.client.get(self.map_url), self.upload_url)
 
@@ -658,3 +725,75 @@ class SignUpTests(TestCase):
         self.assertRedirects(response, reverse("deck-list"))
         self.assertEqual(int(self.client.session["_auth_user_id"]),
                          get_user_model().objects.get(username="carol").pk)
+
+
+class LanguageTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("alice", password="pw")
+        self.deck = Deck.objects.create(name="Palabras", language="es", owner=self.user)
+        Card.objects.create(deck=self.deck, question="comer", answer="manger")
+        self.client.force_login(self.user)
+
+    def switch_to(self, language):
+        return self.client.post(reverse("set_language"), {"language": language, "next": "/"})
+
+    def test_site_is_in_french_by_default(self):
+        response = self.client.get(reverse("deck-list"))
+        self.assertContains(response, '<html lang="fr">')
+        self.assertContains(response, "Mes paquets")
+        self.assertNotContains(response, "anglais et espagnol")
+
+    def test_switcher_turns_the_site_into_english(self):
+        self.assertRedirects(self.switch_to("en"), "/")
+        response = self.client.get(reverse("deck-list"))
+        self.assertContains(response, '<html lang="en">')
+        self.assertContains(response, "My decks")
+        self.assertContains(response, "Spanish")
+        self.assertNotContains(response, "Mes paquets")
+        self.switch_to("fr")
+        self.assertContains(self.client.get(reverse("deck-list")), "Mes paquets")
+
+    def test_review_prompt_and_messages_follow_the_language(self):
+        self.switch_to("en")
+        url = reverse("study", args=[self.deck.pk])
+        response = self.client.get(url + "?direction=reverse&answer_mode=type")
+        self.assertContains(response, "Translate into Spanish")
+        self.assertContains(response, 'data-wrong="❌ The expected answer was “{expected}”."')
+        response = self.client.post(reverse("deck-delete", args=[self.deck.pk]), follow=True)
+        self.assertContains(response, "Deck “Palabras” deleted.")
+
+    def test_language_switch_offers_the_other_language(self):
+        self.client.logout()
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, 'name="language" value="en"')
+        self.assertContains(response, 'aria-checked="false"')
+        self.switch_to("en")
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, 'name="language" value="fr"')
+        self.assertContains(response, 'aria-checked="true"')
+
+    def test_deck_languages_list_common_ones_first(self):
+        response = self.client.get(reverse("deck-create"))
+        html = response.content.decode()
+        common = html[html.index('<optgroup label="Langues courantes">'):html.index("</optgroup>")]
+        for name in ("Anglais", "Espagnol", "Allemand", "Italien", "Portugais"):
+            self.assertIn(name, common)
+        others = html[html.index('<optgroup label="Autres langues">'):]
+        self.assertLess(others.index("Arabe"), others.index("Chinois"))
+        self.switch_to("en")
+        self.assertContains(self.client.get(reverse("deck-create")), '<option value="zh">Chinese</option>')
+
+    def test_deck_in_another_language(self):
+        self.client.post(reverse("deck-create"), {"name": "Hanzi", "language": "zh"})
+        deck = Deck.objects.get(name="Hanzi")
+        Card.objects.create(deck=deck, question="你好", answer="bonjour")
+        response = self.client.get(reverse("study", args=[deck.pk]) + "?direction=reverse")
+        self.assertContains(response, "Traduisez en chinois")
+        response = self.client.get(reverse("card-list", args=[deck.pk]))
+        self.assertContains(response, "cards/flags/cn.svg")
+        self.assertContains(response, 'data-lang="zh-CN"')
+
+    def test_decks_show_their_language_flag(self):
+        for url in (reverse("deck-list"), reverse("card-list", args=[self.deck.pk]),
+                    reverse("stats")):
+            self.assertContains(self.client.get(url), "cards/flags/es.svg")

@@ -21,6 +21,7 @@ from cards.views import SignUpView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include("cards.urls")),

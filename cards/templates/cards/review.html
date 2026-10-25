@@ -1,31 +1,39 @@
 <!-- cards/templates/cards/review.html -->
 
-{% load humanize %}
+{% load i18n humanize %}
 
 <div class="review-card">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <div class="btn-group btn-group-sm" role="group" aria-label="Sens de révision">
-            {% for key, label in directions.items %}
-                <a href="?direction={{ key }}" class="btn {% if key == direction %}btn-primary active{% else %}btn-outline-primary{% endif %}"
-                   {% if key == direction %}aria-current="true"{% endif %}>{{ label }}</a>
-            {% endfor %}
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-secondary">{% translate "Sens :" %}</span>
+            <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'Sens de révision' %}">
+                {% for key, label in directions.items %}
+                    <a href="?direction={{ key }}{% if check_card %}&amp;card={{ check_card.pk }}{% endif %}"
+                       class="btn {% if key == direction %}btn-primary active{% else %}btn-outline-primary{% endif %}"
+                       {% if key == direction %}aria-current="true"{% endif %}>{{ label }}</a>
+                {% endfor %}
+            </div>
         </div>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Mode de réponse">
-            {% for key, label in answer_modes.items %}
-                <a href="?answer_mode={{ key }}" class="btn {% if key == answer_mode %}btn-secondary active{% else %}btn-outline-secondary{% endif %}"
-                   {% if key == answer_mode %}aria-current="true"{% endif %}>
-                    <i class="bi bi-{% if key == 'type' %}keyboard{% else %}eye{% endif %} me-1"></i>{{ label }}
-                </a>
-            {% endfor %}
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-secondary">{% translate "Mode :" %}</span>
+            <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'Mode de réponse' %}">
+                {% for key, label in answer_modes.items %}
+                    <a href="?answer_mode={{ key }}{% if check_card %}&amp;card={{ check_card.pk }}{% endif %}"
+                       class="btn {% if key == answer_mode %}btn-secondary active{% else %}btn-outline-secondary{% endif %}"
+                       {% if key == answer_mode %}aria-current="true"{% endif %}>
+                        <i class="bi bi-{% if key == 'type' %}keyboard{% else %}eye{% endif %} me-1"></i>{{ label }}
+                    </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
     {% if check_card %}
         <div class="card shadow-sm">
             <div class="card-header d-flex align-items-center">
-                <span class="badge box-swatch box-{{ check_card.box }} me-2">Boîte {{ check_card.box }}</span>
+                <span class="badge box-swatch box-{{ check_card.box }} me-2">{% blocktranslate with number=check_card.box %}Boîte {{ number }}{% endblocktranslate %}</span>
                 <span class="text-secondary small ms-auto">
-                    <mark class="px-1 rounded">{{ object_list | length }}</mark> carte{{ object_list | pluralize }} à réviser aujourd'hui
+                    {% blocktranslate count counter=object_list|length %}<mark class="px-1 rounded">{{ counter }}</mark> carte à réviser aujourd'hui{% plural %}<mark class="px-1 rounded">{{ counter }}</mark> cartes à réviser aujourd'hui{% endblocktranslate %}
                 </span>
             </div>
             <div class="card-body text-center py-4">
@@ -33,7 +41,9 @@
             </div>
             <div class="card-footer d-flex flex-wrap align-items-center gap-3">
                 <span class="shortcuts small text-secondary">
-                    <kbd>Espace</kbd> afficher la réponse · <kbd>→</kbd> je sais · <kbd>←</kbd> je ne sais pas · <kbd>P</kbd> écouter
+                    {% blocktranslate trimmed %}
+                        <kbd>Espace</kbd> afficher la réponse · <kbd>→</kbd> je sais · <kbd>←</kbd> je ne sais pas · <kbd>P</kbd> écouter
+                    {% endblocktranslate %}
                 </span>
                 <span class="ms-auto">{% include "cards/voice_picker.html" with sample=check_card.question %}</span>
             </div>
@@ -42,12 +52,12 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <div class="display-4">🎉</div>
-                <h2 class="h4 mt-3">Plus rien à réviser ici aujourd'hui.</h2>
+                <h2 class="h4 mt-3">{% translate "Plus rien à réviser ici aujourd'hui." %}</h2>
                 <p class="text-secondary mb-4">
-                    {% if next_due %}Prochaine révision : <strong>{{ next_due | naturalday }}</strong>.{% else %}Ajoutez des cartes pour commencer.{% endif %}
+                    {% if next_due %}{% blocktranslate with date=next_due|naturalday %}Prochaine révision : <strong>{{ date }}</strong>.{% endblocktranslate %}{% else %}{% translate "Ajoutez des cartes pour commencer." %}{% endif %}
                 </p>
-                <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-primary"><i class="bi bi-card-list me-1"></i> Voir les cartes</a>
-                <a href="{% url 'stats' %}" class="btn btn-outline-secondary"><i class="bi bi-bar-chart-line me-1"></i> Statistiques</a>
+                <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-primary"><i class="bi bi-card-list me-1"></i> {% translate "Voir les cartes" %}</a>
+                <a href="{% url 'stats' %}" class="btn btn-outline-secondary"><i class="bi bi-bar-chart-line me-1"></i> {% translate "Statistiques" %}</a>
             </div>
         </div>
     {% endif %}

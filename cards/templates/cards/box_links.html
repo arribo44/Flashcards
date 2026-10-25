@@ -1,13 +1,15 @@
 <!-- cards/templates/cards/box_links.html -->
 
+{% load i18n %}
+
 {% for box in boxes %}
     <li class="nav-item">
         <a href="{% url 'box' deck_pk=deck.pk box_num=box.number %}"
            class="nav-link{% if request.resolver_match.url_name == 'box' and request.resolver_match.kwargs.box_num == box.number %} active{% endif %}"
-           title="{{ box.due_count }} à réviser aujourd'hui / {{ box.card_count }} dans la boîte">
+           title="{% blocktranslate with due=box.due_count total=box.card_count %}{{ due }} à réviser aujourd'hui / {{ total }} dans la boîte{% endblocktranslate %}">
             <i class="nav-icon bi bi-{{ box.number }}-square"></i>
             <p>
-                Boîte {{ box.number }}
+                {% blocktranslate with number=box.number %}Boîte {{ number }}{% endblocktranslate %}
                 <span class="nav-badge badge box-swatch box-{{ box.number }} me-3">{{ box.due_count }}/{{ box.card_count }}</span>
             </p>
         </a>

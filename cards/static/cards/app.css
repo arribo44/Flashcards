@@ -10,6 +10,16 @@ body {
     font-weight: 500;
 }
 
+/* AdminLTE draws the badge and arrow over the end of the text: keep room for
+   them, so a long deck name is cut short with "…" instead of running under them */
+.sidebar-menu .nav-link > p:has(> .nav-arrow) {
+    padding-right: 1.75rem;
+}
+
+.sidebar-menu .nav-link > p:has(> .nav-badge) {
+    padding-right: 3.25rem;
+}
+
 /* Leitner boxes: one hue, light (new) to dark (mastered) */
 .box-1 { --box-alpha: 0.3; }
 .box-2 { --box-alpha: 0.45; }
@@ -234,4 +244,70 @@ button.speak:focus-visible {
     font-size: 3.5rem;
     font-weight: 700;
     line-height: 1;
+}
+
+/* Language flags, drawn at the size of the surrounding text */
+.flag {
+    width: 1.35em;
+    height: 0.9em;
+    object-fit: cover;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+    vertical-align: -0.05em;
+}
+
+.sidebar-menu .nav-icon .flag {
+    width: 1.2rem;
+    height: 0.8rem;
+}
+
+/* Interface language switch: French on the left, English on the right */
+.language-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    border-radius: var(--bs-border-radius);
+    background: none;
+    color: inherit;
+}
+
+.language-switch:focus-visible {
+    outline: 2px solid var(--bs-primary);
+}
+
+.language-switch-track {
+    position: relative;
+    width: 2.1rem;
+    height: 1.15rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    background: var(--bs-secondary-bg);
+}
+
+.language-switch-knob {
+    position: absolute;
+    top: 0.1rem;
+    left: 0.1rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--bs-primary);
+    transition: left 0.15s ease-in-out;
+}
+
+.language-switch[aria-checked="true"] .language-switch-knob {
+    left: calc(100% - 0.9rem);
+}
+
+.language-switch[aria-checked="true"] .language-switch-fr,
+.language-switch[aria-checked="false"] .language-switch-en {
+    opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .language-switch-knob {
+        transition: none;
+    }
 }

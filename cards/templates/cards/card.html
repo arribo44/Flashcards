@@ -1,6 +1,6 @@
 <!-- cards/templates/cards/card.html -->
 
-{% load humanize %}
+{% load i18n humanize %}
 
 <tr>
     <td>
@@ -13,17 +13,17 @@
     <td>{{ card.answer }}</td>
     <td class="d-none d-md-table-cell small text-nowrap">
         {% if card.is_due %}
-            <span class="badge text-bg-warning">À réviser aujourd'hui</span>
+            <span class="badge text-bg-warning">{% translate "À réviser aujourd'hui" %}</span>
         {% else %}
-            Prochaine révision : {{ card.due_date | naturalday }}
+            {% blocktranslate with date=card.due_date|naturalday %}Prochaine révision : {{ date }}{% endblocktranslate %}
         {% endif %}
     </td>
     <td class="text-end text-nowrap">
-        <a href="{% url 'card-update' card.deck_id card.id %}" class="btn btn-sm btn-outline-secondary" title="Modifier">
-            <i class="bi bi-pencil"></i><span class="visually-hidden">Modifier</span>
+        <a href="{% url 'card-update' card.deck_id card.id %}" class="btn btn-sm btn-outline-secondary" title="{% translate 'Modifier' %}">
+            <i class="bi bi-pencil"></i><span class="visually-hidden">{% translate "Modifier" %}</span>
         </a>
-        <a href="{% url 'card-delete' card.deck_id card.id %}" class="btn btn-sm btn-outline-danger" title="Supprimer">
-            <i class="bi bi-trash"></i><span class="visually-hidden">Supprimer</span>
+        <a href="{% url 'card-delete' card.deck_id card.id %}" class="btn btn-sm btn-outline-danger" title="{% translate 'Supprimer' %}">
+            <i class="bi bi-trash"></i><span class="visually-hidden">{% translate "Supprimer" %}</span>
         </a>
     </td>
 </tr>

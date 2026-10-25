@@ -12,6 +12,7 @@ from django.urls import reverse, reverse_lazy
 from datetime import timedelta
 
 from django.utils import timezone
+from django.utils.translation import gettext as _, gettext_lazy, ngettext_lazy
 
 from django.shortcuts import get_object_or_404, redirect
 
@@ -30,14 +31,14 @@ from .forms import AnkiMappingForm, AnkiUploadForm, CardCheckForm, CardImportFor
 
 
 STUDY_DIRECTIONS = {
-    "forward": "Question → Réponse",
-    "reverse": "Réponse → Question",
-    "mixed": "Mélangé",
+    "forward": gettext_lazy("Question → Réponse"),
+    "reverse": gettext_lazy("Réponse → Question"),
+    "mixed": gettext_lazy("Mélangé"),
 }
 
 ANSWER_MODES = {
-    "reveal": "Révéler la réponse",
-    "type": "Taper la réponse",
+    "reveal": gettext_lazy("Révéler la réponse"),
+    "type": gettext_lazy("Taper la réponse"),
 }
 
 
@@ -138,7 +139,7 @@ class StatsView(LoginRequiredMixin, TemplateView):
 class DeckCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     model = Deck
     fields = ["name", "language"]
-    success_message = "Paquet « %(name)s » créé."
+    success_message = gettext_lazy("Paquet « %(name)s » créé.")
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -152,7 +153,7 @@ class DeckUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     model = Deck
     fields = ["name", "language"]
     success_url = reverse_lazy("deck-list")
-    success_message = "Paquet « %(name)s » enregistré."
+    success_message = gettext_lazy("Paquet « %(name)s » enregistré.")
 
     def get_queryset(self):
         return self.request.user.decks.all()
@@ -166,7 +167,7 @@ class DeckDeleteView(SuccessMessageMixin, LoginRequiredMixin, DeleteView):
         return self.request.user.decks.annotate(card_count=Count("cards"))
 
     def get_success_message(self, cleaned_data):
-        return f"Paquet « {self.object.name} » supprimé."
+        return _("Paquet « %(name)s » supprimé.") % {"name": self.object.name}
 
 
 class UserDeckMixin(LoginRequiredMixin):
@@ -209,7 +210,7 @@ class CardListView(UserDeckMixin, ListView):
 class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):
     model = Card
     fields = ["question", "answer", "example", "box"]
-    success_message = "Carte « %(question)s » ajoutée."
+    success_message = gettext_lazy("Carte « %(question)s » ajoutée.")
 
     def form_valid(self, form):
         form.instance.deck = self.deck
@@ -222,7 +223,7 @@ class CardCreateView(SuccessMessageMixin, UserDeckMixin, CreateView):
 class CardUpdateView(SuccessMessageMixin, UserDeckMixin, UpdateView):
     model = Card
     fields = ["question", "answer", "example", "box"]
-    success_message = "Carte « %(question)s » enregistrée."
+    success_message = gettext_lazy("Carte « %(question)s » enregistrée.")
 
     def get_queryset(self):
         return self.deck.cards.all()
@@ -241,7 +242,7 @@ class CardDeleteView(SuccessMessageMixin, UserDeckMixin, DeleteView):
         return reverse("card-list", args=[self.deck.pk])
 
     def get_success_message(self, cleaned_data):
-        return f"Carte « {self.object.question} » supprimée."
+        return _("Carte « %(question)s » supprimée.") % {"question": self.object.question}
 
 
 def add_cards(deck, rows):
@@ -259,14 +260,29 @@ def add_cards(deck, rows):
     return len(new_cards)
 
 
+SKIPPED_MESSAGES = {
+    "known": ngettext_lazy(
+        "%(count)d ignorée (déjà présente).", "%(count)d ignorées (déjà présentes).", "count"
+    ),
+    "empty": ngettext_lazy(
+        "%(count)d ignorée (question ou réponse vide).",
+        "%(count)d ignorées (question ou réponse vide).",
+        "count",
+    ),
+    "too_long": ngettext_lazy(
+        "%(count)d ignorée (trop longue).", "%(count)d ignorées (trop longues).", "count"
+    ),
+}
+
+
 def import_summary(imported, **skipped):
     """Build e.g. "12 cartes importées. 2 ignorées (déjà présentes)."."""
-    plural = "s" if imported > 1 else ""
-    message = f"{imported} carte{plural} importée{plural}."
+    message = ngettext_lazy(
+        "%(count)d carte importée.", "%(count)d cartes importées.", "count"
+    ) % {"count": imported}
     for reason, count in skipped.items():
         if count:
-            plural = "s" if count > 1 else ""
-            message += f" {count} ignorée{plural} ({reason.format(s=plural)})."
+            message += " " + SKIPPED_MESSAGES[reason] % {"count": count}
     return message
 
 
@@ -281,7 +297,7 @@ class CardImportView(UserDeckMixin, FormView):
         imported = add_cards(self.deck, rows)
         messages.success(
             self.request,
-            import_summary(imported, **{"déjà présente{s}": len(rows) - imported}),
+            import_summary(imported, known=len(rows) - imported),
         )
         return redirect("card-list", deck_pk=self.deck.pk)
 
@@ -290,7 +306,7 @@ ANKI_SESSION_KEY = "anki_import"
 
 
 class AnkiUploadView(UserDeckMixin, FormView):
-    """First step of an Anki import: read the .apkg and keep its notes in the session."""
+    """First step of an Anki import: read the chosen .apkg and keep its notes in the session."""
 
     form_class = AnkiUploadForm
     template_name = "cards/anki_upload.html"
@@ -298,8 +314,8 @@ class AnkiUploadView(UserDeckMixin, FormView):
     def form_valid(self, form):
         self.request.session[ANKI_SESSION_KEY] = {
             "deck": self.deck.pk,
-            "file_name": self.request.FILES["apkg_file"].name,
-            "note_types": form.cleaned_data["apkg_file"],
+            "file_name": form.cleaned_data["file_name"],
+            "note_types": form.cleaned_data["note_types"],
         }
         return redirect("anki-map", deck_pk=self.deck.pk)
 
@@ -328,7 +344,9 @@ class AnkiMapView(UserDeckMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         note_type = self.get_note_type()
-        kwargs.update(field_names=note_type["fields"], notes=note_type["notes"])
+        kwargs.update(
+            field_names=note_type["fields"], notes=note_type["notes"], studied=self.deck.language
+        )
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -361,11 +379,9 @@ class AnkiMapView(UserDeckMixin, FormView):
 
         imported = add_cards(self.deck, rows)
         del self.request.session[ANKI_SESSION_KEY]
-        messages.success(self.request, import_summary(imported, **{
-            "déjà présente{s}": len(rows) - imported,
-            "question ou réponse vide": empty,
-            "trop longue{s}": too_long,
-        }))
+        messages.success(self.request, import_summary(
+            imported, known=len(rows) - imported, empty=empty, too_long=too_long
+        ))
         return redirect("card-list", deck_pk=self.deck.pk)
 
 
@@ -398,7 +414,9 @@ class StudyView(UserDeckMixin, ListView):
         context["answer_mode"] = self.get_study_option("answer_mode", ANSWER_MODES)
         context["answer_modes"] = ANSWER_MODES
         if self.object_list:
-            context["check_card"] = random.choice(self.object_list)
+            # Changing the direction or answer mode keeps the card on screen.
+            kept = [c for c in self.object_list if str(c.pk) == self.request.GET.get("card")]
+            context["check_card"] = kept[0] if kept else random.choice(self.object_list)
             context["reverse"] = direction == "reverse" or (
                 direction == "mixed" and random.random() < 0.5
             )

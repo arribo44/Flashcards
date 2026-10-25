@@ -1,0 +1,1330 @@
+# English translation of the Flashcards interface, written in French.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Flashcards\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-25 15:26+0100\n"
+"PO-Revision-Date: 2026-10-25 10:00+0100\n"
+"Last-Translator: arribo44\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: cards/anki.py:142 cards/anki.py:193 cards/anki.py:200
+msgid "Le fichier Anki est illisible ou endommagé."
+msgstr "The Anki file is unreadable or damaged."
+
+#: cards/anki.py:148
+#, python-format
+msgid "Ce paquet contient %(count)d notes : %(max)d au maximum par import."
+msgstr "This deck has %(count)d notes: %(max)d at most per import."
+
+#: cards/anki.py:154
+msgid ""
+"Ce paquet n'a pas pu être lu : réexportez-le depuis Anki en cochant « Prise "
+"en charge des anciennes versions d'Anki »."
+msgstr ""
+"This deck could not be read: export it again from Anki with “Support older "
+"Anki versions” ticked."
+
+#: cards/anki.py:168
+msgid "Ce paquet ne contient aucune note."
+msgstr "This deck has no notes."
+
+#: cards/anki.py:182 cards/anki.py:188
+msgid "Ce fichier n'est pas un paquet Anki (.apkg)."
+msgstr "This file is not an Anki deck (.apkg)."
+
+#: cards/anki.py:207
+msgid "Ce paquet Anki est trop volumineux."
+msgstr "This Anki deck is too large."
+
+#: cards/forms.py:25
+msgid "Fichier CSV"
+msgstr "CSV file"
+
+#: cards/forms.py:27
+msgid ""
+"Colonnes : question, réponse et, si vous voulez, un exemple. Séparateur "
+"virgule, point-virgule ou tabulation. Une ligne d'en-tête « question » est "
+"ignorée."
+msgstr ""
+"Columns: question, answer and, optionally, an example. Separated by commas, "
+"semicolons or tabs. A “question” header line is skipped."
+
+#: cards/forms.py:37
+msgid "Le fichier dépasse 1 Mo."
+msgstr "The file is larger than 1 MB."
+
+#: cards/forms.py:52
+#, python-format
+msgid "Ligne %(line)d : il faut une question et une réponse."
+msgstr "Line %(line)d: a question and an answer are required."
+
+#: cards/forms.py:56
+#, python-format
+msgid "%(field)s (%(max)d caractères max.)"
+msgstr "%(field)s (%(max)d characters max.)"
+
+#: cards/forms.py:63
+#, python-format
+msgid "Ligne %(line)d : trop long pour %(fields)s."
+msgstr "Line %(line)d: too long for %(fields)s."
+
+#: cards/forms.py:73
+#, python-format
+msgid "… et %(count)d autre(s) erreur(s)."
+msgstr "… and %(count)d more error(s)."
+
+#: cards/forms.py:77
+msgid "Le fichier ne contient aucune carte."
+msgstr "The file contains no cards."
+
+#: cards/forms.py:95
+msgid "Encodage du fichier non reconnu : enregistrez-le en UTF-8."
+msgstr "Unknown file encoding: save it as UTF-8."
+
+#: cards/forms.py:107
+msgid "Paquet du dossier"
+msgstr "Deck from the folder"
+
+#: cards/forms.py:109
+msgid "Paquet Anki (.apkg)"
+msgstr "Anki deck (.apkg)"
+
+#: cards/forms.py:110
+msgid ""
+"Fichier téléchargé depuis AnkiWeb ou exporté depuis Anki. 300 Mo au maximum."
+msgstr "File downloaded from AnkiWeb or exported from Anki. 300 MB at most."
+
+#: cards/forms.py:119
+msgid "— Choisir un paquet —"
+msgstr "— Choose a deck —"
+
+#: cards/forms.py:123
+#, python-format
+msgid "Paquets trouvés dans %(folder)s."
+msgstr "Decks found in %(folder)s."
+
+#: cards/forms.py:126
+msgid "ou envoyer un fichier"
+msgstr "or upload a file"
+
+#: cards/forms.py:152
+msgid "Choisissez un paquet du dossier ou envoyez un fichier, pas les deux."
+msgstr "Choose a deck from the folder or upload a file, not both."
+
+#: cards/forms.py:154
+msgid "Choisissez un paquet Anki (.apkg)."
+msgstr "Choose an Anki deck (.apkg)."
+
+#: cards/forms.py:173
+msgid "Choisissez un fichier .apkg."
+msgstr "Choose an .apkg file."
+
+#: cards/forms.py:175
+msgid "Le fichier dépasse 300 Mo."
+msgstr "The file is larger than 300 MB."
+
+#: cards/forms.py:182
+msgid "Question (langue étudiée)"
+msgstr "Question (language studied)"
+
+#: cards/forms.py:183
+msgid "Réponse (traduction)"
+msgstr "Answer (translation)"
+
+#: cards/forms.py:185
+msgid "Exemple"
+msgstr "Example"
+
+#: cards/forms.py:198
+#, python-format
+msgid "%(field)s — « %(sample)s »"
+msgstr "%(field)s — “%(sample)s”"
+
+#: cards/forms.py:205
+msgid "— Aucun —"
+msgstr "— None —"
+
+#: cards/forms.py:215
+#, python-format
+msgid ""
+"Le champ « %(field)s » ne contient presque que des nombres : c'est sans "
+"doute un identifiant. Choisissez un autre champ."
+msgstr ""
+"The “%(field)s” field holds almost only numbers: it is probably an "
+"identifier. Choose another field."
+
+#: cards/forms.py:221
+msgid "Choisissez un champ différent pour chaque rôle."
+msgstr "Choose a different field for each role."
+
+#: cards/languages.py:27
+msgid "Anglais"
+msgstr "English"
+
+#: cards/languages.py:27
+msgid "Traduisez en anglais"
+msgstr "Translate into English"
+
+#: cards/languages.py:28
+msgid "Espagnol"
+msgstr "Spanish"
+
+#: cards/languages.py:28
+msgid "Traduisez en espagnol"
+msgstr "Translate into Spanish"
+
+#: cards/languages.py:29
+msgid "Allemand"
+msgstr "German"
+
+#: cards/languages.py:29
+msgid "Traduisez en allemand"
+msgstr "Translate into German"
+
+#: cards/languages.py:30
+msgid "Italien"
+msgstr "Italian"
+
+#: cards/languages.py:30
+msgid "Traduisez en italien"
+msgstr "Translate into Italian"
+
+#: cards/languages.py:31
+msgid "Portugais"
+msgstr "Portuguese"
+
+#: cards/languages.py:31
+msgid "Traduisez en portugais"
+msgstr "Translate into Portuguese"
+
+#: cards/languages.py:32
+msgid "Arabe"
+msgstr "Arabic"
+
+#: cards/languages.py:32
+msgid "Traduisez en arabe"
+msgstr "Translate into Arabic"
+
+#: cards/languages.py:33
+msgid "Catalan"
+msgstr "Catalan"
+
+#: cards/languages.py:33
+msgid "Traduisez en catalan"
+msgstr "Translate into Catalan"
+
+#: cards/languages.py:34
+msgid "Chinois"
+msgstr "Chinese"
+
+#: cards/languages.py:34
+msgid "Traduisez en chinois"
+msgstr "Translate into Chinese"
+
+#: cards/languages.py:35
+msgid "Coréen"
+msgstr "Korean"
+
+#: cards/languages.py:35
+msgid "Traduisez en coréen"
+msgstr "Translate into Korean"
+
+#: cards/languages.py:36
+msgid "Danois"
+msgstr "Danish"
+
+#: cards/languages.py:36
+msgid "Traduisez en danois"
+msgstr "Translate into Danish"
+
+#: cards/languages.py:37
+msgid "Finnois"
+msgstr "Finnish"
+
+#: cards/languages.py:37
+msgid "Traduisez en finnois"
+msgstr "Translate into Finnish"
+
+#: cards/languages.py:38
+msgid "Français"
+msgstr "French"
+
+#: cards/languages.py:38
+msgid "Traduisez en français"
+msgstr "Translate into French"
+
+#: cards/languages.py:39
+msgid "Grec"
+msgstr "Greek"
+
+#: cards/languages.py:39
+msgid "Traduisez en grec"
+msgstr "Translate into Greek"
+
+#: cards/languages.py:40
+msgid "Hébreu"
+msgstr "Hebrew"
+
+#: cards/languages.py:40
+msgid "Traduisez en hébreu"
+msgstr "Translate into Hebrew"
+
+#: cards/languages.py:41
+msgid "Hindi"
+msgstr "Hindi"
+
+#: cards/languages.py:41
+msgid "Traduisez en hindi"
+msgstr "Translate into Hindi"
+
+#: cards/languages.py:42
+msgid "Hongrois"
+msgstr "Hungarian"
+
+#: cards/languages.py:42
+msgid "Traduisez en hongrois"
+msgstr "Translate into Hungarian"
+
+#: cards/languages.py:43
+msgid "Indonésien"
+msgstr "Indonesian"
+
+#: cards/languages.py:43
+msgid "Traduisez en indonésien"
+msgstr "Translate into Indonesian"
+
+#: cards/languages.py:44
+msgid "Japonais"
+msgstr "Japanese"
+
+#: cards/languages.py:44
+msgid "Traduisez en japonais"
+msgstr "Translate into Japanese"
+
+#: cards/languages.py:45
+msgid "Néerlandais"
+msgstr "Dutch"
+
+#: cards/languages.py:45
+msgid "Traduisez en néerlandais"
+msgstr "Translate into Dutch"
+
+#: cards/languages.py:46
+msgid "Norvégien"
+msgstr "Norwegian"
+
+#: cards/languages.py:46
+msgid "Traduisez en norvégien"
+msgstr "Translate into Norwegian"
+
+#: cards/languages.py:47
+msgid "Polonais"
+msgstr "Polish"
+
+#: cards/languages.py:47
+msgid "Traduisez en polonais"
+msgstr "Translate into Polish"
+
+#: cards/languages.py:48
+msgid "Roumain"
+msgstr "Romanian"
+
+#: cards/languages.py:48
+msgid "Traduisez en roumain"
+msgstr "Translate into Romanian"
+
+#: cards/languages.py:49
+msgid "Russe"
+msgstr "Russian"
+
+#: cards/languages.py:49
+msgid "Traduisez en russe"
+msgstr "Translate into Russian"
+
+#: cards/languages.py:50
+msgid "Suédois"
+msgstr "Swedish"
+
+#: cards/languages.py:50
+msgid "Traduisez en suédois"
+msgstr "Translate into Swedish"
+
+#: cards/languages.py:51
+msgid "Tchèque"
+msgstr "Czech"
+
+#: cards/languages.py:51
+msgid "Traduisez en tchèque"
+msgstr "Translate into Czech"
+
+#: cards/languages.py:52
+msgid "Thaï"
+msgstr "Thai"
+
+#: cards/languages.py:52
+msgid "Traduisez en thaï"
+msgstr "Translate into Thai"
+
+#: cards/languages.py:53
+msgid "Turc"
+msgstr "Turkish"
+
+#: cards/languages.py:53
+msgid "Traduisez en turc"
+msgstr "Translate into Turkish"
+
+#: cards/languages.py:54
+msgid "Ukrainien"
+msgstr "Ukrainian"
+
+#: cards/languages.py:54
+msgid "Traduisez en ukrainien"
+msgstr "Translate into Ukrainian"
+
+#: cards/languages.py:55
+msgid "Vietnamien"
+msgstr "Vietnamese"
+
+#: cards/languages.py:55
+msgid "Traduisez en vietnamien"
+msgstr "Translate into Vietnamese"
+
+#: cards/languages.py:77
+msgid "Langues courantes"
+msgstr "Common languages"
+
+#: cards/languages.py:78
+msgid "Autres langues"
+msgstr "Other languages"
+
+#: cards/models.py:20
+msgid "nom"
+msgstr "name"
+
+#: cards/models.py:21
+msgid "langue"
+msgstr "language"
+
+#: cards/models.py:26
+msgid "propriétaire"
+msgstr "owner"
+
+#: cards/models.py:28
+msgid "créé le"
+msgstr "created on"
+
+#: cards/models.py:32 cards/models.py:59 cards/models.py:118
+msgid "paquet"
+msgstr "deck"
+
+#: cards/models.py:51
+msgid "Traduisez"
+msgstr "Translate"
+
+#: cards/models.py:61
+msgid "question"
+msgstr "question"
+
+#: cards/models.py:62
+msgid "réponse"
+msgstr "answer"
+
+#: cards/models.py:64
+msgid "exemple"
+msgstr "example"
+
+#: cards/models.py:67
+msgid "Une phrase qui utilise la question en contexte (facultatif)."
+msgstr "A sentence using the question in context (optional)."
+
+#: cards/models.py:70
+msgid "boîte"
+msgstr "box"
+
+#: cards/models.py:74
+msgid "prochaine révision"
+msgstr "next review"
+
+#: cards/models.py:75
+msgid "dernière révision"
+msgstr "last review"
+
+#: cards/models.py:76
+msgid "créée le"
+msgstr "created on"
+
+#: cards/models.py:79 cards/models.py:126
+msgid "carte"
+msgstr "card"
+
+#: cards/models.py:128
+msgid "réussie"
+msgstr "solved"
+
+#: cards/models.py:129
+msgid "date"
+msgstr "date"
+
+#: cards/models.py:133
+msgid "révision"
+msgstr "review"
+
+#: cards/templates/cards/anki_map.html:6 cards/templates/cards/anki_map.html:7
+msgid "Choisir les champs"
+msgstr "Choose the fields"
+
+#: cards/templates/cards/anki_map.html:10
+#: cards/templates/cards/anki_upload.html:10
+#: cards/templates/cards/sidebar.html:71
+msgid "Importer Anki"
+msgstr "Import from Anki"
+
+#: cards/templates/cards/anki_map.html:11
+msgid "Champs"
+msgstr "Fields"
+
+#: cards/templates/cards/anki_map.html:17
+#, python-format
+msgid "« %(file)s » : <strong>%(counter)s note</strong> de type « %(type)s »."
+msgid_plural ""
+"« %(file)s » : <strong>%(counter)s notes</strong> de type « %(type)s »."
+msgstr[0] "“%(file)s”: <strong>%(counter)s note</strong> of type “%(type)s”."
+msgstr[1] "“%(file)s”: <strong>%(counter)s notes</strong> of type “%(type)s”."
+
+#: cards/templates/cards/anki_map.html:26
+msgid "Ce paquet contient plusieurs types de notes. Type à importer :"
+msgstr "This deck has several note types. Type to import:"
+
+#: cards/templates/cards/anki_map.html:41
+msgid "Correspondance"
+msgstr "Field mapping"
+
+#: cards/templates/cards/anki_map.html:49
+msgid ""
+"Les cartes arrivent en boîte 1. Sont ignorées les notes dont la question "
+"existe déjà dans le paquet, ou dont la question ou la réponse est vide ou "
+"dépasse 200 caractères. Un exemple de plus de 500 caractères est raccourci."
+msgstr ""
+"Cards go into box 1. Notes are skipped when their question is already in the "
+"deck, or when the question or answer is empty or longer than 200 characters. "
+"An example longer than 500 characters is shortened."
+
+#: cards/templates/cards/anki_map.html:58
+msgid "Importer les cartes"
+msgstr "Import the cards"
+
+#: cards/templates/cards/anki_map.html:59
+msgid "Choisir un autre fichier"
+msgstr "Choose another file"
+
+#: cards/templates/cards/anki_map.html:67
+msgid "Aperçu des premières notes"
+msgstr "Preview of the first notes"
+
+#: cards/templates/cards/anki_upload.html:6
+#: cards/templates/cards/anki_upload.html:7
+#: cards/templates/cards/card_list.html:22
+msgid "Importer un paquet Anki"
+msgstr "Import an Anki deck"
+
+#: cards/templates/cards/anki_upload.html:18
+msgid "Choisir le paquet"
+msgstr "Choose the deck"
+
+#: cards/templates/cards/anki_upload.html:26
+msgid "Lire le paquet"
+msgstr "Read the deck"
+
+#: cards/templates/cards/anki_upload.html:27
+#: cards/templates/cards/card_confirm_delete.html:28
+#: cards/templates/cards/card_form.html:24
+#: cards/templates/cards/card_import.html:24
+#: cards/templates/cards/deck_confirm_delete.html:33
+#: cards/templates/cards/deck_form.html:29
+msgid "Annuler"
+msgstr "Cancel"
+
+#: cards/templates/cards/anki_upload.html:34
+msgid ""
+"Vous choisirez ensuite quels champs du paquet servent de question, de "
+"réponse et d'exemple."
+msgstr ""
+"You will then choose which fields of the deck are used as question, answer "
+"and example."
+
+#: cards/templates/cards/anki_upload.html:40
+msgid "Où trouver des paquets ?"
+msgstr "Where to find decks?"
+
+#: cards/templates/cards/anki_upload.html:42
+#, python-format
+msgid ""
+"Des milliers de paquets partagés gratuits sont sur <a href=\"https://ankiweb."
+"net/shared/decks\" target=\"_blank\" rel=\"noopener\">AnkiWeb</a> (fichiers "
+"<code>.apkg</code>). Les cartes seront ajoutées à « %(name)s », en boîte 1."
+msgstr ""
+"Thousands of free shared decks are on <a href=\"https://ankiweb.net/shared/"
+"decks\" target=\"_blank\" rel=\"noopener\">AnkiWeb</a> (<code>.apkg</code> "
+"files). The cards will be added to “%(name)s”, in box 1."
+
+#: cards/templates/cards/anki_upload.html:49
+msgid ""
+"Le texte est repris sans mise en forme ; les sons et les images sont ignorés "
+"(le bouton <i class=\"bi bi-volume-up\"></i> lit les cartes avec la synthèse "
+"vocale)."
+msgstr ""
+"Text is imported without formatting; sounds and images are skipped (the <i "
+"class=\"bi bi-volume-up\"></i> button reads cards aloud with speech "
+"synthesis)."
+
+#: cards/templates/cards/base.html:22
+msgid "Choisir un fichier"
+msgstr "Choose a file"
+
+#: cards/templates/cards/base.html:22
+msgid "Aucun fichier choisi"
+msgstr "No file chosen"
+
+#: cards/templates/cards/base.html:29
+msgid "Afficher ou masquer le menu"
+msgstr "Show or hide the menu"
+
+#: cards/templates/cards/base.html:37
+#, python-format
+msgid "Réviser « %(name)s »"
+msgstr "Review “%(name)s”"
+
+#: cards/templates/cards/base.html:48
+msgid "Changer le thème"
+msgstr "Change the theme"
+
+#: cards/templates/cards/base.html:57
+msgid "Clair"
+msgstr "Light"
+
+#: cards/templates/cards/base.html:62
+msgid "Sombre"
+msgstr "Dark"
+
+#: cards/templates/cards/base.html:67
+msgid "Automatique"
+msgstr "Auto"
+
+#: cards/templates/cards/base.html:79
+#, python-format
+msgid "Connecté en tant que <strong>%(username)s</strong>"
+msgstr "Signed in as <strong>%(username)s</strong>"
+
+#: cards/templates/cards/base.html:85
+msgid "Se déconnecter"
+msgstr "Sign out"
+
+#: cards/templates/cards/base.html:118
+msgid "Fil d’Ariane"
+msgstr "Breadcrumb"
+
+#: cards/templates/cards/base.html:120 cards/templates/cards/deck_list.html:6
+#: cards/templates/cards/deck_list.html:7
+#: cards/templates/cards/deck_list.html:8 cards/templates/cards/sidebar.html:10
+msgid "Mes paquets"
+msgstr "My decks"
+
+#: cards/templates/cards/base.html:135
+msgid "Fermer"
+msgstr "Close"
+
+#: cards/templates/cards/base.html:144
+msgid "Système de Leitner · 5 boîtes"
+msgstr "Leitner system · 5 boxes"
+
+#: cards/templates/cards/box.html:6 cards/templates/cards/box.html:8
+#: cards/templates/cards/box.html:13 cards/templates/cards/box_links.html:12
+#: cards/templates/cards/card_list.html:63 cards/templates/cards/review.html:34
+#: cards/templates/cards/stats.html:133
+#, python-format
+msgid "Boîte %(number)s"
+msgstr "Box %(number)s"
+
+#: cards/templates/cards/box.html:9
+#, python-format
+msgid "%(counter)s carte dans cette boîte"
+msgid_plural "%(counter)s cartes dans cette boîte"
+msgstr[0] "%(counter)s card in this box"
+msgstr[1] "%(counter)s cards in this box"
+
+#: cards/templates/cards/box_links.html:9
+#, python-format
+msgid "%(due)s à réviser aujourd'hui / %(total)s dans la boîte"
+msgstr "%(due)s due today / %(total)s in the box"
+
+#: cards/templates/cards/card.html:16 cards/templates/cards/stats.html:36
+msgid "À réviser aujourd'hui"
+msgstr "Due today"
+
+#: cards/templates/cards/card.html:18
+#, python-format
+msgid "Prochaine révision : %(date)s"
+msgstr "Next review: %(date)s"
+
+#: cards/templates/cards/card.html:22 cards/templates/cards/card.html:23
+#: cards/templates/cards/card_form.html:10
+#: cards/templates/cards/deck_list.html:70
+msgid "Modifier"
+msgstr "Edit"
+
+#: cards/templates/cards/card.html:25 cards/templates/cards/card.html:26
+#: cards/templates/cards/card_confirm_delete.html:10
+#: cards/templates/cards/card_form.html:27
+#: cards/templates/cards/deck_confirm_delete.html:10
+msgid "Supprimer"
+msgstr "Delete"
+
+#: cards/templates/cards/card_check_form.html:9
+msgid "Je sais"
+msgstr "I know it"
+
+#: cards/templates/cards/card_check_form.html:11
+msgid "Je ne sais pas"
+msgstr "I don't know"
+
+#: cards/templates/cards/card_confirm_delete.html:6
+#: cards/templates/cards/card_confirm_delete.html:7
+msgid "Supprimer la carte"
+msgstr "Delete the card"
+
+#: cards/templates/cards/card_confirm_delete.html:21
+msgid "Cette suppression est définitive."
+msgstr "This cannot be undone."
+
+#: cards/templates/cards/card_confirm_delete.html:27
+#: cards/templates/cards/deck_confirm_delete.html:32
+msgid "Supprimer définitivement"
+msgstr "Delete permanently"
+
+#: cards/templates/cards/card_form.html:6
+#: cards/templates/cards/card_form.html:7
+msgid "Modifier la carte"
+msgstr "Edit the card"
+
+#: cards/templates/cards/card_form.html:6
+#: cards/templates/cards/card_form.html:7
+#: cards/templates/cards/card_form.html:10
+#: cards/templates/cards/card_list.html:19
+#: cards/templates/cards/sidebar.html:59
+msgid "Nouvelle carte"
+msgstr "New card"
+
+#: cards/templates/cards/card_form.html:23
+#: cards/templates/cards/deck_form.html:28
+msgid "Enregistrer"
+msgstr "Save"
+
+#: cards/templates/cards/card_form.html:36
+msgid ""
+"Après l'enregistrement, le formulaire se réaffiche pour saisir la carte "
+"suivante."
+msgstr "After saving, the form shows again so you can enter the next card."
+
+#: cards/templates/cards/card_import.html:6
+#: cards/templates/cards/card_import.html:10
+#: cards/templates/cards/card_list.html:21
+#: cards/templates/cards/sidebar.html:65
+msgid "Importer un CSV"
+msgstr "Import a CSV"
+
+#: cards/templates/cards/card_import.html:7
+msgid "Importer des cartes (CSV)"
+msgstr "Import cards (CSV)"
+
+#: cards/templates/cards/card_import.html:23
+msgid "Importer"
+msgstr "Import"
+
+#: cards/templates/cards/card_import.html:31
+msgid "Format attendu"
+msgstr "Expected format"
+
+#: cards/templates/cards/card_import.html:33
+#, python-format
+msgid ""
+"Une carte par ligne : question, réponse et, si vous voulez, un exemple. Les "
+"nouvelles cartes arrivent dans la boîte 1 de « %(name)s » ; celles dont la "
+"question existe déjà sont ignorées. Si une ligne est invalide, rien n'est "
+"importé."
+msgstr ""
+"One card per line: question, answer and, optionally, an example. New cards "
+"go into box 1 of “%(name)s”; those whose question already exists are "
+"skipped. If a line is invalid, nothing is imported."
+
+#: cards/templates/cards/card_import.html:40
+msgid "question;réponse;exemple"
+msgstr "question;answer;example"
+
+#: cards/templates/cards/card_list.html:18
+#: cards/templates/cards/sidebar.html:44
+msgid "Réviser"
+msgstr "Review"
+
+#: cards/templates/cards/card_list.html:27
+msgid "Rechercher une question, une réponse, un exemple…"
+msgstr "Search a question, an answer, an example…"
+
+#: cards/templates/cards/card_list.html:27
+#: cards/templates/cards/card_list.html:28
+msgid "Rechercher"
+msgstr "Search"
+
+#: cards/templates/cards/card_list.html:38
+#, python-format
+msgid "%(counter)s résultat pour « %(query)s »"
+msgid_plural "%(counter)s résultats pour « %(query)s »"
+msgstr[0] "%(counter)s result for “%(query)s”"
+msgstr[1] "%(counter)s results for “%(query)s”"
+
+#: cards/templates/cards/card_list.html:39
+msgid "Effacer la recherche"
+msgstr "Clear the search"
+
+#: cards/templates/cards/card_list.html:41
+#, python-format
+msgid "%(counter)s carte"
+msgid_plural "%(counter)s cartes"
+msgstr[0] "%(counter)s card"
+msgstr[1] "%(counter)s cards"
+
+#: cards/templates/cards/card_list.html:52
+msgid "Question"
+msgstr "Question"
+
+#: cards/templates/cards/card_list.html:53
+msgid "Réponse"
+msgstr "Answer"
+
+#: cards/templates/cards/card_list.html:54
+msgid "Prochaine révision"
+msgstr "Next review"
+
+#: cards/templates/cards/card_list.html:55
+msgid "Actions"
+msgstr "Actions"
+
+#: cards/templates/cards/card_list.html:77
+msgid "Aucune carte ne correspond à cette recherche."
+msgstr "No card matches this search."
+
+#: cards/templates/cards/card_list.html:80
+msgid "Ce paquet est vide."
+msgstr "This deck is empty."
+
+#: cards/templates/cards/card_list.html:81
+msgid "Ajouter une carte"
+msgstr "Add a card"
+
+#: cards/templates/cards/card_list.html:87
+msgid "Pages"
+msgstr "Pages"
+
+#: cards/templates/cards/card_list.html:91
+msgid "← Précédente"
+msgstr "← Previous"
+
+#: cards/templates/cards/card_list.html:94
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: cards/templates/cards/card_list.html:97
+msgid "Suivante →"
+msgstr "Next →"
+
+#: cards/templates/cards/deck_confirm_delete.html:6
+#: cards/templates/cards/deck_confirm_delete.html:7
+#: cards/templates/cards/deck_form.html:37
+msgid "Supprimer le paquet"
+msgstr "Delete the deck"
+
+#: cards/templates/cards/deck_confirm_delete.html:21
+#, python-format
+msgid ""
+"Le paquet « %(name)s » et <strong>sa %(counter)s carte</strong> seront "
+"supprimés définitivement."
+msgid_plural ""
+"Le paquet « %(name)s » et <strong>ses %(counter)s cartes</strong> seront "
+"supprimés définitivement."
+msgstr[0] ""
+"The deck “%(name)s” and <strong>its %(counter)s card</strong> will be "
+"deleted permanently."
+msgstr[1] ""
+"The deck “%(name)s” and <strong>its %(counter)s cards</strong> will be "
+"deleted permanently."
+
+#: cards/templates/cards/deck_form.html:6
+msgid "Paramètres du paquet"
+msgstr "Deck settings"
+
+#: cards/templates/cards/deck_form.html:6
+#: cards/templates/cards/deck_form.html:7
+#: cards/templates/cards/deck_form.html:10
+#: cards/templates/cards/deck_list.html:13
+#: cards/templates/cards/sidebar.html:22
+msgid "Nouveau paquet"
+msgstr "New deck"
+
+#: cards/templates/cards/deck_form.html:7
+#, python-format
+msgid "Paramètres de « %(name)s »"
+msgstr "Settings of “%(name)s”"
+
+#: cards/templates/cards/deck_form.html:10
+#: cards/templates/cards/sidebar.html:77
+msgid "Paramètres"
+msgstr "Settings"
+
+#: cards/templates/cards/deck_form.html:22
+msgid ""
+"La langue choisit la voix qui prononce les cartes (bouton <i class=\"bi bi-"
+"volume-up\"></i>)."
+msgstr ""
+"The language picks the voice that reads the cards (<i class=\"bi bi-volume-"
+"up\"></i> button)."
+
+#: cards/templates/cards/deck_form.html:38
+msgid "Le paquet et toutes ses cartes seront supprimés définitivement."
+msgstr "The deck and all its cards will be deleted permanently."
+
+#: cards/templates/cards/deck_form.html:41
+msgid "Supprimer ce paquet"
+msgstr "Delete this deck"
+
+#: cards/templates/cards/deck_list.html:17
+#, python-format
+msgid ""
+"🔥 Série en cours : <strong>%(counter)s jour</strong> de révision d'affilée"
+msgid_plural ""
+"🔥 Série en cours : <strong>%(counter)s jours</strong> de révision d'affilée"
+msgstr[0] ""
+"🔥 Current streak: <strong>%(counter)s day</strong> of reviews in a row"
+msgstr[1] ""
+"🔥 Current streak: <strong>%(counter)s days</strong> of reviews in a row"
+
+#: cards/templates/cards/deck_list.html:37
+#, python-format
+msgid "<strong>%(counter)s</strong> carte"
+msgid_plural "<strong>%(counter)s</strong> cartes"
+msgstr[0] "<strong>%(counter)s</strong> card"
+msgstr[1] "<strong>%(counter)s</strong> cards"
+
+#: cards/templates/cards/deck_list.html:39
+#, python-format
+msgid "%(due)s à revoir"
+msgstr "%(due)s due"
+
+#: cards/templates/cards/deck_list.html:41
+msgid "À jour"
+msgstr "Up to date"
+
+#: cards/templates/cards/deck_list.html:46
+msgid "Répartition des cartes par boîte"
+msgstr "Cards per box"
+
+#: cards/templates/cards/deck_list.html:46
+#, python-format
+msgid "boîte %(number)s : %(total)s"
+msgstr "box %(number)s: %(total)s"
+
+#: cards/templates/cards/deck_list.html:50
+#, python-format
+msgid "Boîte %(number)s : %(counter)s carte"
+msgid_plural "Boîte %(number)s : %(counter)s cartes"
+msgstr[0] "Box %(number)s: %(counter)s card"
+msgstr[1] "Box %(number)s: %(counter)s cards"
+
+#: cards/templates/cards/deck_list.html:56
+msgid "Boîte 1"
+msgstr "Box 1"
+
+#: cards/templates/cards/deck_list.html:56
+msgid "Boîte 5 (maîtrisées)"
+msgstr "Box 5 (mastered)"
+
+#: cards/templates/cards/deck_list.html:59
+msgid "Ce paquet est vide : ajoutez ou importez des cartes."
+msgstr "This deck is empty: add or import cards."
+
+#: cards/templates/cards/deck_list.html:64
+#, python-format
+msgid "Réviser (%(due)s à revoir)"
+msgstr "Review (%(due)s due)"
+
+#: cards/templates/cards/deck_list.html:67
+#: cards/templates/cards/sidebar.html:52
+msgid "Cartes"
+msgstr "Cards"
+
+#: cards/templates/cards/deck_list.html:69
+msgid "Modifier le paquet"
+msgstr "Edit the deck"
+
+#: cards/templates/cards/deck_list.html:80
+msgid "Bienvenue !"
+msgstr "Welcome!"
+
+#: cards/templates/cards/deck_list.html:82
+msgid ""
+"Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des "
+"cartes, ou à importer un fichier CSV ou un paquet Anki."
+msgstr ""
+"You don't have any deck yet. Create one to start adding cards, or to import "
+"a CSV file or an Anki deck."
+
+#: cards/templates/cards/deck_list.html:88
+msgid "Créer mon premier paquet"
+msgstr "Create my first deck"
+
+#: cards/templates/cards/review.html:8
+msgid "Sens :"
+msgstr "Direction:"
+
+#: cards/templates/cards/review.html:9
+msgid "Sens de révision"
+msgstr "Review direction"
+
+#: cards/templates/cards/review.html:18
+msgid "Mode :"
+msgstr "Mode:"
+
+#: cards/templates/cards/review.html:19
+msgid "Mode de réponse"
+msgstr "Answer mode"
+
+#: cards/templates/cards/review.html:36
+#, python-format
+msgid ""
+"<mark class=\"px-1 rounded\">%(counter)s</mark> carte à réviser aujourd'hui"
+msgid_plural ""
+"<mark class=\"px-1 rounded\">%(counter)s</mark> cartes à réviser aujourd'hui"
+msgstr[0] "<mark class=\"px-1 rounded\">%(counter)s</mark> card due today"
+msgstr[1] "<mark class=\"px-1 rounded\">%(counter)s</mark> cards due today"
+
+#: cards/templates/cards/review.html:44
+msgid ""
+"<kbd>Espace</kbd> afficher la réponse · <kbd>→</kbd> je sais · <kbd>←</kbd> "
+"je ne sais pas · <kbd>P</kbd> écouter"
+msgstr ""
+"<kbd>Space</kbd> show the answer · <kbd>→</kbd> I know it · <kbd>←</kbd> I "
+"don't know · <kbd>P</kbd> listen"
+
+#: cards/templates/cards/review.html:55
+msgid "Plus rien à réviser ici aujourd'hui."
+msgstr "Nothing left to review here today."
+
+#: cards/templates/cards/review.html:57
+#, python-format
+msgid "Prochaine révision : <strong>%(date)s</strong>."
+msgstr "Next review: <strong>%(date)s</strong>."
+
+#: cards/templates/cards/review.html:57
+msgid "Ajoutez des cartes pour commencer."
+msgstr "Add cards to get started."
+
+#: cards/templates/cards/review.html:59
+msgid "Voir les cartes"
+msgstr "See the cards"
+
+#: cards/templates/cards/review.html:60 cards/templates/cards/sidebar.html:16
+#: cards/templates/cards/stats.html:6 cards/templates/cards/stats.html:7
+#: cards/templates/cards/stats.html:9
+msgid "Statistiques"
+msgstr "Statistics"
+
+#: cards/templates/cards/review_card.html:6
+msgid "Que signifie…"
+msgstr "What does it mean…"
+
+#: cards/templates/cards/review_card.html:21
+msgid "Votre réponse"
+msgstr "Your answer"
+
+#: cards/templates/cards/review_card.html:23
+msgid "Vérifier"
+msgstr "Check"
+
+#: cards/templates/cards/review_card.html:28
+msgid "✅ Correct !"
+msgstr "✅ Correct!"
+
+#: cards/templates/cards/review_card.html:29
+#, python-brace-format
+msgid "✅ Presque : attention aux accents (« {expected} »)."
+msgstr "✅ Almost: mind the accents (“{expected}”)."
+
+#: cards/templates/cards/review_card.html:30
+#, python-brace-format
+msgid "❌ La réponse attendue était « {expected} »."
+msgstr "❌ The expected answer was “{expected}”."
+
+#: cards/templates/cards/review_card.html:35
+msgid "Afficher la réponse"
+msgstr "Show the answer"
+
+#: cards/templates/cards/sidebar.html:5
+msgid "Menu principal"
+msgstr "Main menu"
+
+#: cards/templates/cards/sidebar.html:27
+msgid "Paquets"
+msgstr "Decks"
+
+#: cards/templates/cards/speak_button.html:5
+msgid "Écouter"
+msgstr "Listen"
+
+#: cards/templates/cards/speak_button.html:5
+#, python-format
+msgid "Écouter « %(text)s »"
+msgstr "Listen to “%(text)s”"
+
+#: cards/templates/cards/stats.html:19
+msgid "jour de révision d'affilée"
+msgid_plural "jours de révision d'affilée"
+msgstr[0] "day of reviews in a row"
+msgstr[1] "days of reviews in a row"
+
+#: cards/templates/cards/stats.html:22
+msgid "Révisez aujourd'hui pour continuer la série"
+msgstr "Review today to keep the streak going"
+
+#: cards/templates/cards/stats.html:25
+#, python-format
+msgid "Record : %(counter)s jour"
+msgid_plural "Record : %(counter)s jours"
+msgstr[0] "Best: %(counter)s day"
+msgstr[1] "Best: %(counter)s days"
+
+#: cards/templates/cards/stats.html:45
+msgid "Taux de réussite"
+msgstr "Success rate"
+
+#: cards/templates/cards/stats.html:47
+#, python-format
+msgid "sur %(counter)s révision en %(days)s jours"
+msgid_plural "sur %(counter)s révisions en %(days)s jours"
+msgstr[0] "over %(counter)s review in %(days)s days"
+msgstr[1] "over %(counter)s reviews in %(days)s days"
+
+#: cards/templates/cards/stats.html:55
+msgid "Cartes maîtrisées"
+msgstr "Mastered cards"
+
+#: cards/templates/cards/stats.html:57
+#, python-format
+msgid "en boîte 5, sur %(counter)s carte"
+msgid_plural "en boîte 5, sur %(counter)s cartes"
+msgstr[0] "in box 5, out of %(counter)s card"
+msgstr[1] "in box 5, out of %(counter)s cards"
+
+#: cards/templates/cards/stats.html:69
+#, python-format
+msgid "Révisions des %(days)s derniers jours"
+msgstr "Reviews over the last %(days)s days"
+
+#: cards/templates/cards/stats.html:74
+#, python-format
+msgid ""
+"Nombre de révisions par jour sur les %(days)s derniers jours, %(total)s au "
+"total. Détail dans le tableau ci-dessous."
+msgstr ""
+"Number of reviews per day over the last %(days)s days, %(total)s in total. "
+"Details in the table below."
+
+#: cards/templates/cards/stats.html:84
+#, python-format
+msgid "%(counter)s révision"
+msgid_plural "%(counter)s révisions"
+msgstr[0] "%(counter)s review"
+msgstr[1] "%(counter)s reviews"
+
+#: cards/templates/cards/stats.html:85
+#, python-format
+msgid "%(counter)s réussie"
+msgid_plural "%(counter)s réussies"
+msgstr[0] "%(counter)s solved"
+msgstr[1] "%(counter)s solved"
+
+#: cards/templates/cards/stats.html:96
+msgid "Voir le tableau"
+msgstr "Show the table"
+
+#: cards/templates/cards/stats.html:100
+msgid "Jour"
+msgstr "Day"
+
+#: cards/templates/cards/stats.html:100
+msgid "Révisions"
+msgstr "Reviews"
+
+#: cards/templates/cards/stats.html:100
+msgid "Réussies"
+msgstr "Solved"
+
+#: cards/templates/cards/stats.html:115
+#, python-format
+msgid "Aucune révision ces %(days)s derniers jours."
+msgstr "No reviews in the last %(days)s days."
+
+#: cards/templates/cards/stats.html:123
+msgid "Progression par paquet"
+msgstr "Progress per deck"
+
+#: cards/templates/cards/stats.html:131
+msgid "Paquet"
+msgstr "Deck"
+
+#: cards/templates/cards/stats.html:135
+msgid "À réviser"
+msgstr "Due"
+
+#: cards/templates/cards/stats.html:153
+msgid ""
+"Les colonnes 1 à 5 sont les boîtes de Leitner : la boîte 5 contient les "
+"cartes maîtrisées."
+msgstr "Columns 1 to 5 are the Leitner boxes: box 5 holds the mastered cards."
+
+#: cards/templates/cards/stats.html:155
+msgid "Vous n'avez pas encore de paquet."
+msgstr "You don't have any deck yet."
+
+#: cards/templates/cards/study.html:6 cards/templates/cards/study.html:10
+msgid "Révision"
+msgstr "Review"
+
+#: cards/templates/cards/study.html:7
+msgid "Révision du jour"
+msgstr "Today's review"
+
+#: cards/templates/cards/voice_picker.html:5
+msgid "Voix"
+msgstr "Voice"
+
+#: cards/templates/registration/auth_base.html:30
+msgid "Flashcards de vocabulaire · système de Leitner"
+msgstr "Vocabulary flashcards · Leitner system"
+
+#: cards/templates/registration/login.html:6
+msgid "Connexion"
+msgstr "Sign in"
+
+#: cards/templates/registration/login.html:9
+msgid "Connectez-vous pour réviser vos cartes"
+msgstr "Sign in to review your cards"
+
+#: cards/templates/registration/login.html:15
+#: cards/templates/registration/signup.html:18
+msgid "Se connecter"
+msgstr "Sign in"
+
+#: cards/templates/registration/login.html:19
+msgid "Pas encore de compte ?"
+msgstr "No account yet?"
+
+#: cards/templates/registration/login.html:19
+#: cards/templates/registration/signup.html:6
+msgid "Créer un compte"
+msgstr "Create an account"
+
+#: cards/templates/registration/signup.html:9
+msgid "Créez votre compte pour commencer"
+msgstr "Create your account to get started"
+
+#: cards/templates/registration/signup.html:14
+msgid "Créer mon compte"
+msgstr "Create my account"
+
+#: cards/templates/registration/signup.html:18
+msgid "Déjà un compte ?"
+msgstr "Already have an account?"
+
+#: cards/views.py:34
+msgid "Question → Réponse"
+msgstr "Question → Answer"
+
+#: cards/views.py:35
+msgid "Réponse → Question"
+msgstr "Answer → Question"
+
+#: cards/views.py:36
+msgid "Mélangé"
+msgstr "Mixed"
+
+#: cards/views.py:40
+msgid "Révéler la réponse"
+msgstr "Reveal the answer"
+
+#: cards/views.py:41
+msgid "Taper la réponse"
+msgstr "Type the answer"
+
+#: cards/views.py:142
+#, python-format
+msgid "Paquet « %(name)s » créé."
+msgstr "Deck “%(name)s” created."
+
+#: cards/views.py:156
+#, python-format
+msgid "Paquet « %(name)s » enregistré."
+msgstr "Deck “%(name)s” saved."
+
+#: cards/views.py:170
+#, python-format
+msgid "Paquet « %(name)s » supprimé."
+msgstr "Deck “%(name)s” deleted."
+
+#: cards/views.py:213
+#, python-format
+msgid "Carte « %(question)s » ajoutée."
+msgstr "Card “%(question)s” added."
+
+#: cards/views.py:226
+#, python-format
+msgid "Carte « %(question)s » enregistrée."
+msgstr "Card “%(question)s” saved."
+
+#: cards/views.py:245
+#, python-format
+msgid "Carte « %(question)s » supprimée."
+msgstr "Card “%(question)s” deleted."
+
+#: cards/views.py:265
+#, python-format
+msgid "%(count)d ignorée (déjà présente)."
+msgid_plural "%(count)d ignorées (déjà présentes)."
+msgstr[0] "%(count)d skipped (already there)."
+msgstr[1] "%(count)d skipped (already there)."
+
+#: cards/views.py:268
+#, python-format
+msgid "%(count)d ignorée (question ou réponse vide)."
+msgid_plural "%(count)d ignorées (question ou réponse vide)."
+msgstr[0] "%(count)d skipped (empty question or answer)."
+msgstr[1] "%(count)d skipped (empty question or answer)."
+
+#: cards/views.py:273
+#, python-format
+msgid "%(count)d ignorée (trop longue)."
+msgid_plural "%(count)d ignorées (trop longues)."
+msgstr[0] "%(count)d skipped (too long)."
+msgstr[1] "%(count)d skipped (too long)."
+
+#: cards/views.py:281
+#, python-format
+msgid "%(count)d carte importée."
+msgid_plural "%(count)d cartes importées."
+msgstr[0] "%(count)d card imported."
+msgstr[1] "%(count)d cards imported."

@@ -3,6 +3,9 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+from . import languages
 
 
 NUM_BOXES = 5
@@ -14,33 +17,38 @@ REVIEW_INTERVALS = {1: 0, 2: 1, 3: 3, 4: 7, 5: 14}
 
 
 class Deck(models.Model):
-    class Language(models.TextChoices):
-        ENGLISH = "en", "Anglais"
-        SPANISH = "es", "Espagnol"
-
-    # Voices used by the browser's speech synthesis to read the cards
-    SPEECH_LANGS = {Language.ENGLISH: "en-GB", Language.SPANISH: "es-ES"}
-
-    name = models.CharField("nom", max_length=100)
-    language = models.CharField("langue", max_length=2, choices=Language.choices)
+    name = models.CharField(_("nom"), max_length=100)
+    language = models.CharField(_("langue"), max_length=2, choices=languages.choices)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="decks",
-        verbose_name="propriétaire",
+        verbose_name=_("propriétaire"),
     )
-    date_created = models.DateTimeField("créé le", auto_now_add=True)
+    date_created = models.DateTimeField(_("créé le"), auto_now_add=True)
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "paquet"
+        verbose_name = _("paquet")
 
     def __str__(self):
         return self.name
 
     @property
+    def study_language(self):
+        return languages.LANGUAGES.get(self.language)
+
+    @property
     def speech_lang(self):
-        return self.SPEECH_LANGS.get(self.language, self.language)
+        return self.study_language.speech_lang if self.study_language else self.language
+
+    @property
+    def flag(self):
+        return self.study_language.flag if self.study_language else None
+
+    @property
+    def reverse_prompt(self):
+        return self.study_language.reverse_prompt if self.study_language else _("Traduisez")
 
 
 class Card(models.Model):
@@ -48,27 +56,27 @@ class Card(models.Model):
         Deck,
         on_delete=models.CASCADE,
         related_name="cards",
-        verbose_name="paquet",
+        verbose_name=_("paquet"),
     )
-    question = models.CharField("question", max_length=200)
-    answer = models.CharField("réponse", max_length=200)
+    question = models.CharField(_("question"), max_length=200)
+    answer = models.CharField(_("réponse"), max_length=200)
     example = models.CharField(
-        "exemple",
+        _("exemple"),
         max_length=500,
         blank=True,
-        help_text="Une phrase qui utilise la question en contexte (facultatif).",
+        help_text=_("Une phrase qui utilise la question en contexte (facultatif)."),
     )
     box = models.IntegerField(
-        "boîte",
+        _("boîte"),
         choices=zip(BOXES, BOXES),
         default=BOXES[0],
     )
-    due_date = models.DateField("prochaine révision", default=timezone.localdate)
-    last_reviewed = models.DateTimeField("dernière révision", null=True, blank=True)
-    date_created = models.DateTimeField("créée le", auto_now_add=True)
+    due_date = models.DateField(_("prochaine révision"), default=timezone.localdate)
+    last_reviewed = models.DateTimeField(_("dernière révision"), null=True, blank=True)
+    date_created = models.DateTimeField(_("créée le"), auto_now_add=True)
 
     class Meta:
-        verbose_name = "carte"
+        verbose_name = _("carte")
 
     def __str__(self):
         return self.question
@@ -107,7 +115,7 @@ class Review(models.Model):
         Deck,
         on_delete=models.CASCADE,
         related_name="reviews",
-        verbose_name="paquet",
+        verbose_name=_("paquet"),
     )
     # Keep the history when a card is deleted, so past streaks don't change
     card = models.ForeignKey(
@@ -115,11 +123,11 @@ class Review(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name="reviews",
-        verbose_name="carte",
+        verbose_name=_("carte"),
     )
-    solved = models.BooleanField("réussie")
-    reviewed_at = models.DateTimeField("date", default=timezone.now, db_index=True)
+    solved = models.BooleanField(_("réussie"))
+    reviewed_at = models.DateTimeField(_("date"), default=timezone.now, db_index=True)
 
     class Meta:
         ordering = ["-reviewed_at"]
-        verbose_name = "révision"
+        verbose_name = _("révision")

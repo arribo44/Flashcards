@@ -1,0 +1,4 @@
+<!-- cards/templates/cards/flag.html -->
+
+{% load static %}
+{% if code %}<img src="{% static 'cards/flags/'|add:code|add:'.svg' %}" class="flag {{ class }}" width="18" height="12" alt="{{ label }}"{% if label %} title="{{ label }}"{% endif %}>{% endif %}

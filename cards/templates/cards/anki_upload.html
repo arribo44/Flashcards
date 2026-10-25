@@ -1,13 +1,13 @@
 <!-- cards/templates/cards/anki_upload.html -->
 
 {% extends "cards/base.html" %}
-{% load crispy_forms_tags %}
+{% load i18n crispy_forms_tags %}
 
-{% block title %}Importer un paquet Anki{% endblock %}
-{% block page_title %}<i class="bi bi-box-seam me-2 text-primary"></i>Importer un paquet Anki{% endblock %}
+{% block title %}{% translate "Importer un paquet Anki" %}{% endblock %}
+{% block page_title %}<i class="bi bi-box-seam me-2 text-primary"></i>{% translate "Importer un paquet Anki" %}{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Importer Anki</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Importer Anki" %}</li>
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
         <div class="col-lg-7">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><span class="badge text-bg-primary me-2">1</span>Envoyer le fichier</h3>
+                    <h3 class="card-title"><span class="badge text-bg-primary me-2">1</span>{% translate "Choisir le paquet" %}</h3>
                 </div>
                 <form method="post" enctype="multipart/form-data">
                     <div class="card-body">
@@ -23,29 +23,33 @@
                         {{ form|crispy }}
                     </div>
                     <div class="card-footer d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i> Lire le paquet</button>
-                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i> {% translate "Lire le paquet" %}</button>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">{% translate "Annuler" %}</a>
                     </div>
                 </form>
             </div>
             <div class="card mt-3">
                 <div class="card-body text-secondary">
                     <span class="badge text-bg-secondary me-2">2</span>
-                    Vous choisirez ensuite quels champs du paquet servent de question, de réponse et d'exemple.
+                    {% translate "Vous choisirez ensuite quels champs du paquet servent de question, de réponse et d'exemple." %}
                 </div>
             </div>
         </div>
         <div class="col-lg-5">
             <div class="callout callout-info">
-                <h5><i class="bi bi-info-circle me-1"></i> Où trouver des paquets ?</h5>
+                <h5><i class="bi bi-info-circle me-1"></i> {% translate "Où trouver des paquets ?" %}</h5>
                 <p>
-                    Des milliers de paquets partagés gratuits sont sur
-                    <a href="https://ankiweb.net/shared/decks" target="_blank" rel="noopener">AnkiWeb</a>
-                    (fichiers <code>.apkg</code>). Les cartes seront ajoutées à « {{ deck.name }} », en boîte 1.
+                    {% blocktranslate trimmed with name=deck.name %}
+                        Des milliers de paquets partagés gratuits sont sur
+                        <a href="https://ankiweb.net/shared/decks" target="_blank" rel="noopener">AnkiWeb</a>
+                        (fichiers <code>.apkg</code>). Les cartes seront ajoutées à « {{ name }} », en boîte 1.
+                    {% endblocktranslate %}
                 </p>
                 <p class="mb-0">
-                    Le texte est repris sans mise en forme ; les sons et les images sont ignorés
-                    (le bouton <i class="bi bi-volume-up"></i> lit les cartes avec la synthèse vocale).
+                    {% blocktranslate trimmed %}
+                        Le texte est repris sans mise en forme ; les sons et les images sont ignorés
+                        (le bouton <i class="bi bi-volume-up"></i> lit les cartes avec la synthèse vocale).
+                    {% endblocktranslate %}
                 </p>
             </div>
         </div>

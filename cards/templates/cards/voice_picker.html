@@ -1,6 +1,7 @@
 <!-- cards/templates/cards/voice_picker.html -->
 
+{% load i18n %}
 <label class="voice-picker d-flex align-items-center gap-2 small text-secondary mb-0" data-lang="{{ deck.speech_lang }}" data-sample="{{ sample }}" hidden>
-    <i class="bi bi-volume-up" aria-hidden="true"></i> Voix
+    <i class="bi bi-volume-up" aria-hidden="true"></i> {% translate "Voix" %}
     <select class="form-select form-select-sm"></select>
 </label>

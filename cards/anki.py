@@ -22,6 +22,9 @@ import zlib
 
 import zstandard
 from django.utils.html import strip_tags
+from django.utils.translation import gettext as _
+
+from .languages import names_for, plain
 
 # The collection holds text only, so even big decks stay far below this:
 # anything larger is most likely a zip bomb
@@ -49,14 +52,15 @@ def clean_field(value):
     return " ".join(value.split())
 
 
-# Usual Anki field names for each role, best match first
+# Usual Anki field names for each role, best match first, in plain() form.
+# A field named after the language studied or the user's language comes first.
 FIELD_NAME_HINTS = {
-    "question": ("front", "recto", "question", "word", "mot", "english", "anglais",
-                 "spanish", "espagnol", "español", "en", "es"),
-    "answer": ("back", "verso", "answer", "réponse", "reponse", "french", "français",
-               "francais", "translation", "traduction", "meaning", "sens", "fr"),
+    "question": ("front", "recto", "question", "word", "mot"),
+    "answer": ("back", "verso", "answer", "reponse", "translation", "traduction", "meaning", "sens"),
 }
-EXAMPLE_NAME_HINTS = ("example", "exemple", "sentence", "phrase")
+# "Example" or "sentence" in English, French, Spanish, Italian, Portuguese and German
+EXAMPLE_NAME_HINTS = ("example", "exemple", "ejemplo", "esempio", "exemplo", "beispiel",
+                      "sentence", "phrase", "frase", "satz")
 
 
 def numeric_fields(notes):
@@ -70,17 +74,24 @@ def numeric_fields(notes):
     }
 
 
-def suggest_mapping(field_names, notes):
-    """Guess which fields hold the question, the answer and the example."""
-    names = [name.casefold().strip() for name in field_names]
+def suggest_mapping(field_names, notes, studied=None, native=None):
+    """Guess which fields hold the question, the answer and the example.
+
+    `studied` is the deck's language and `native` the user's, as ISO 639-1
+    codes: a field named after one of them (e.g. "Italiano", "English") is the
+    question or the answer.
+    """
+    names = [plain(name) for name in field_names]
     numeric = numeric_fields(notes)
     usable = [
         index for index in range(len(names))
         if index not in numeric and any(note[index] for note in notes)
     ]
 
+    language_hints = {"question": names_for(studied), "answer": names_for(native)}
     mapping = {}
-    for role, hints in FIELD_NAME_HINTS.items():
+    for role, generic_hints in FIELD_NAME_HINTS.items():
+        hints = [*sorted(language_hints[role]), *generic_hints]
         taken = set(mapping.values())
         mapping[role] = next(
             (
@@ -138,19 +149,20 @@ def read_apkg(uploaded_file):
         finally:
             connection.close()
     except sqlite3.DatabaseError as error:
-        raise AnkiImportError("Le fichier Anki est illisible ou endommagé.") from error
+        raise AnkiImportError(_("Le fichier Anki est illisible ou endommagé.")) from error
     finally:
         os.unlink(db_file.name)
 
     if len(notes) > MAX_NOTES:
         raise AnkiImportError(
-            f"Ce paquet contient {len(notes)} notes : {MAX_NOTES} au maximum par import."
+            _("Ce paquet contient %(count)d notes : %(max)d au maximum par import.")
+            % {"count": len(notes), "max": MAX_NOTES}
         )
     if len(notes) == 1 and "update to the latest anki" in notes[0][1].lower():
         # Placeholder note that new Anki versions put in the legacy collection
         raise AnkiImportError(
-            "Ce paquet n'a pas pu être lu : réexportez-le depuis Anki en cochant "
-            "« Prise en charge des anciennes versions d'Anki »."
+            _("Ce paquet n'a pas pu être lu : réexportez-le depuis Anki en cochant "
+              "« Prise en charge des anciennes versions d'Anki ».")
         )
 
     for mid, fields in notes:
@@ -163,7 +175,7 @@ def read_apkg(uploaded_file):
 
     used = [note_type for note_type in note_types.values() if note_type["notes"]]
     if not used:
-        raise AnkiImportError("Ce paquet ne contient aucune note.")
+        raise AnkiImportError(_("Ce paquet ne contient aucune note."))
     return sorted(used, key=lambda note_type: -len(note_type["notes"]))
 
 
@@ -177,32 +189,32 @@ def extract_collection(uploaded_file):
     try:
         archive = zipfile.ZipFile(uploaded_file)
     except zipfile.BadZipFile as error:
-        raise AnkiImportError("Ce fichier n'est pas un paquet Anki (.apkg).") from error
+        raise AnkiImportError(_("Ce fichier n'est pas un paquet Anki (.apkg).")) from error
 
     with archive:
         names = set(archive.namelist())
         name = next((name for name in COLLECTION_FILES if name in names), None)
         if name is None:
-            raise AnkiImportError("Ce fichier n'est pas un paquet Anki (.apkg).")
+            raise AnkiImportError(_("Ce fichier n'est pas un paquet Anki (.apkg)."))
         try:
             with archive.open(name) as member:
                 data = read_limited(member)
         except (zipfile.BadZipFile, zlib.error, EOFError, NotImplementedError) as error:
-            raise AnkiImportError("Le fichier Anki est illisible ou endommagé.") from error
+            raise AnkiImportError(_("Le fichier Anki est illisible ou endommagé.")) from error
 
     if name.endswith("b"):
         try:
             reader = zstandard.ZstdDecompressor().stream_reader(io.BytesIO(data))
             data = read_limited(reader)
         except zstandard.ZstdError as error:
-            raise AnkiImportError("Le fichier Anki est illisible ou endommagé.") from error
+            raise AnkiImportError(_("Le fichier Anki est illisible ou endommagé.")) from error
     return data
 
 
 def read_limited(stream):
     data = stream.read(MAX_COLLECTION_SIZE + 1)
     if len(data) > MAX_COLLECTION_SIZE:
-        raise AnkiImportError("Ce paquet Anki est trop volumineux.")
+        raise AnkiImportError(_("Ce paquet Anki est trop volumineux."))
     return data
 
 

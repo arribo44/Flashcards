@@ -1,19 +1,20 @@
 <!-- cards/templates/cards/deck_list.html -->
 
 {% extends "cards/base.html" %}
+{% load i18n %}
 
-{% block title %}Mes paquets{% endblock %}
-{% block page_title %}Mes paquets{% endblock %}
-{% block breadcrumb_root %}<li class="breadcrumb-item active" aria-current="page">Mes paquets</li>{% endblock %}
+{% block title %}{% translate "Mes paquets" %}{% endblock %}
+{% block page_title %}{% translate "Mes paquets" %}{% endblock %}
+{% block breadcrumb_root %}<li class="breadcrumb-item active" aria-current="page">{% translate "Mes paquets" %}</li>{% endblock %}
 
 {% block content %}
     <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
         <a href="{% url 'deck-create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Nouveau paquet
+            <i class="bi bi-plus-lg me-1"></i> {% translate "Nouveau paquet" %}
         </a>
         {% if streak %}
             <span class="badge text-bg-warning fs-6 fw-semibold">
-                🔥 Série en cours : <strong>{{ streak }} jour{{ streak | pluralize }}</strong> de révision d'affilée
+                {% blocktranslate count counter=streak %}🔥 Série en cours : <strong>{{ counter }} jour</strong> de révision d'affilée{% plural %}🔥 Série en cours : <strong>{{ counter }} jours</strong> de révision d'affilée{% endblocktranslate %}
             </span>
         {% endif %}
     </div>
@@ -24,6 +25,7 @@
                 <div class="card deck-card h-100 card-outline card-primary">
                     <div class="card-header">
                         <h3 class="card-title">
+                            {% include "cards/flag.html" with code=deck.flag label="" class="me-2" %}
                             <a href="{% url 'card-list' deck.pk %}" class="text-reset text-decoration-none">{{ deck.name }}</a>
                         </h3>
                         <div class="card-tools">
@@ -32,40 +34,40 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span><strong>{{ deck.card_count }}</strong> carte{{ deck.card_count | pluralize }}</span>
+                            <span>{% blocktranslate count counter=deck.card_count %}<strong>{{ counter }}</strong> carte{% plural %}<strong>{{ counter }}</strong> cartes{% endblocktranslate %}</span>
                             {% if deck.due_count %}
-                                <span class="text-warning-emphasis"><i class="bi bi-clock-history me-1"></i>{{ deck.due_count }} à revoir</span>
+                                <span class="text-warning-emphasis"><i class="bi bi-clock-history me-1"></i>{% blocktranslate with due=deck.due_count %}{{ due }} à revoir{% endblocktranslate %}</span>
                             {% else %}
-                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>À jour</span>
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>{% translate "À jour" %}</span>
                             {% endif %}
                         </div>
                         {% if deck.card_count %}
                             <div class="progress-stacked box-progress" role="img"
-                                 aria-label="Répartition des cartes par boîte : {% for box in deck.box_shares %}boîte {{ box.number }} : {{ box.count }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                 aria-label="{% translate 'Répartition des cartes par boîte' %} : {% for box in deck.box_shares %}{% blocktranslate with number=box.number total=box.count %}boîte {{ number }} : {{ total }}{% endblocktranslate %}{% if not forloop.last %}, {% endif %}{% endfor %}">
                                 {% for box in deck.box_shares %}
                                     {% if box.count %}
                                         <div class="progress" style="width: {{ box.percent|floatformat:'1u' }}%">
-                                            <div class="progress-bar box-swatch box-{{ box.number }}" title="Boîte {{ box.number }} : {{ box.count }} carte{{ box.count | pluralize }}"></div>
+                                            <div class="progress-bar box-swatch box-{{ box.number }}" title="{% blocktranslate with number=box.number count counter=box.count %}Boîte {{ number }} : {{ counter }} carte{% plural %}Boîte {{ number }} : {{ counter }} cartes{% endblocktranslate %}"></div>
                                         </div>
                                     {% endif %}
                                 {% endfor %}
                             </div>
                             <div class="d-flex justify-content-between small text-secondary mt-1">
-                                <span>Boîte 1</span><span>Boîte 5 (maîtrisées)</span>
+                                <span>{% translate "Boîte 1" %}</span><span>{% translate "Boîte 5 (maîtrisées)" %}</span>
                             </div>
                         {% else %}
-                            <p class="text-secondary mb-0">Ce paquet est vide : ajoutez ou importez des cartes.</p>
+                            <p class="text-secondary mb-0">{% translate "Ce paquet est vide : ajoutez ou importez des cartes." %}</p>
                         {% endif %}
                     </div>
                     <div class="card-footer d-flex flex-wrap gap-2">
                         <a href="{% url 'study' deck.pk %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-bullseye me-1"></i> Réviser ({{ deck.due_count }} à revoir)
+                            <i class="bi bi-bullseye me-1"></i> {% blocktranslate with due=deck.due_count %}Réviser ({{ due }} à revoir){% endblocktranslate %}
                         </a>
                         <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-card-list me-1"></i> Cartes
+                            <i class="bi bi-card-list me-1"></i> {% translate "Cartes" %}
                         </a>
-                        <a href="{% url 'deck-update' deck.pk %}" class="btn btn-outline-secondary btn-sm ms-auto" title="Modifier le paquet">
-                            <i class="bi bi-pencil"></i><span class="visually-hidden">Modifier</span>
+                        <a href="{% url 'deck-update' deck.pk %}" class="btn btn-outline-secondary btn-sm ms-auto" title="{% translate 'Modifier le paquet' %}">
+                            <i class="bi bi-pencil"></i><span class="visually-hidden">{% translate "Modifier" %}</span>
                         </a>
                     </div>
                 </div>
@@ -75,13 +77,15 @@
                 <div class="card">
                     <div class="card-body text-center py-5">
                         <i class="bi bi-stack display-4 text-primary"></i>
-                        <h2 class="h4 mt-3">Bienvenue !</h2>
+                        <h2 class="h4 mt-3">{% translate "Bienvenue !" %}</h2>
                         <p class="text-secondary mb-4">
-                            Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des cartes,
-                            ou à importer un fichier CSV ou un paquet Anki.
+                            {% blocktranslate trimmed %}
+                                Vous n'avez pas encore de paquet. Créez-en un pour commencer à ajouter des cartes,
+                                ou à importer un fichier CSV ou un paquet Anki.
+                            {% endblocktranslate %}
                         </p>
                         <a href="{% url 'deck-create' %}" class="btn btn-primary btn-lg">
-                            <i class="bi bi-plus-lg me-1"></i> Créer mon premier paquet
+                            <i class="bi bi-plus-lg me-1"></i> {% translate "Créer mon premier paquet" %}
                         </a>
                     </div>
                 </div>

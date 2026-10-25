@@ -1,13 +1,13 @@
 <!-- cards/templates/cards/card_import.html -->
 
 {% extends "cards/base.html" %}
-{% load crispy_forms_tags %}
+{% load i18n crispy_forms_tags %}
 
-{% block title %}Importer un CSV{% endblock %}
-{% block page_title %}<i class="bi bi-filetype-csv me-2 text-primary"></i>Importer des cartes (CSV){% endblock %}
+{% block title %}{% translate "Importer un CSV" %}{% endblock %}
+{% block page_title %}<i class="bi bi-filetype-csv me-2 text-primary"></i>{% translate "Importer des cartes (CSV)" %}{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Importer un CSV</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Importer un CSV" %}</li>
 {% endblock %}
 
 {% block content %}
@@ -20,22 +20,24 @@
                         {{ form|crispy }}
                     </div>
                     <div class="card-footer d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i> Importer</button>
-                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i> {% translate "Importer" %}</button>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">{% translate "Annuler" %}</a>
                     </div>
                 </form>
             </div>
         </div>
         <div class="col-lg-5">
             <div class="callout callout-info">
-                <h5><i class="bi bi-info-circle me-1"></i> Format attendu</h5>
+                <h5><i class="bi bi-info-circle me-1"></i> {% translate "Format attendu" %}</h5>
                 <p>
-                    Une carte par ligne : question, réponse et, si vous voulez, un exemple.
-                    Les nouvelles cartes arrivent dans la boîte 1 de « {{ deck.name }} » ;
-                    celles dont la question existe déjà sont ignorées.
-                    Si une ligne est invalide, rien n'est importé.
+                    {% blocktranslate trimmed with name=deck.name %}
+                        Une carte par ligne : question, réponse et, si vous voulez, un exemple.
+                        Les nouvelles cartes arrivent dans la boîte 1 de « {{ name }} » ;
+                        celles dont la question existe déjà sont ignorées.
+                        Si une ligne est invalide, rien n'est importé.
+                    {% endblocktranslate %}
                 </p>
-                <pre class="mb-0 small">question;réponse;exemple
+                <pre class="mb-0 small">{% translate "question;réponse;exemple" %}
 Hectic;Intense;It's been a hectic week.
 To sprinkle;Saupoudrer;</pre>
             </div>

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -127,11 +128,23 @@ MESSAGE_TAGS = {messages.ERROR: 'danger'}
 LOGIN_REDIRECT_URL = 'deck-list'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Anki decks (.apkg) found in this folder are offered on the import page, so
+# they can be imported without uploading them (the app runs on your machine)
+ANKI_FOLDER = Path(os.environ.get('ANKI_FOLDER', BASE_DIR / 'DATAS' / 'ANKI'))
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'fr'
+
+# The interface is written in French; the switcher in the header offers English
+LANGUAGES = [
+    ('fr', 'Français'),
+    ('en', 'English'),
+]
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 TIME_ZONE = 'Europe/Paris'
 

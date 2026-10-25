@@ -1,11 +1,12 @@
 <!-- cards/templates/cards/stats.html -->
 
 {% extends "cards/base.html" %}
+{% load i18n %}
 
-{% block title %}Statistiques{% endblock %}
-{% block page_title %}<i class="bi bi-bar-chart-line me-2 text-primary"></i>Statistiques{% endblock %}
+{% block title %}{% translate "Statistiques" %}{% endblock %}
+{% block page_title %}<i class="bi bi-bar-chart-line me-2 text-primary"></i>{% translate "Statistiques" %}{% endblock %}
 {% block breadcrumb %}
-    <li class="breadcrumb-item active" aria-current="page">Statistiques</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Statistiques" %}</li>
 {% endblock %}
 
 {% block content %}
@@ -15,13 +16,13 @@
                 <div class="card-body d-flex flex-column justify-content-center">
                     <div class="hero-streak">🔥 {{ streak }}</div>
                     <div class="text-secondary mt-2">
-                        jour{{ streak | pluralize }} de révision d'affilée
+                        {% blocktranslate count counter=streak %}jour de révision d'affilée{% plural %}jours de révision d'affilée{% endblocktranslate %}
                     </div>
                     {% if streak and not reviewed_today %}
-                        <div class="small text-warning-emphasis mt-1">Révisez aujourd'hui pour continuer la série</div>
+                        <div class="small text-warning-emphasis mt-1">{% translate "Révisez aujourd'hui pour continuer la série" %}</div>
                     {% endif %}
                     {% if best_streak > streak %}
-                        <div class="small text-secondary mt-1">Record : {{ best_streak }} jour{{ best_streak | pluralize }}</div>
+                        <div class="small text-secondary mt-1">{% blocktranslate count counter=best_streak %}Record : {{ counter }} jour{% plural %}Record : {{ counter }} jours{% endblocktranslate %}</div>
                     {% endif %}
                 </div>
             </div>
@@ -32,7 +33,7 @@
                     <div class="info-box mb-0 h-100">
                         <span class="info-box-icon text-bg-warning shadow-sm"><i class="bi bi-clock-history"></i></span>
                         <div class="info-box-content">
-                            <span class="info-box-text">À réviser aujourd'hui</span>
+                            <span class="info-box-text">{% translate "À réviser aujourd'hui" %}</span>
                             <span class="info-box-number fs-4">{{ due_today }}</span>
                         </div>
                     </div>
@@ -41,9 +42,9 @@
                     <div class="info-box mb-0 h-100">
                         <span class="info-box-icon text-bg-success shadow-sm"><i class="bi bi-check2-circle"></i></span>
                         <div class="info-box-content">
-                            <span class="info-box-text">Taux de réussite</span>
+                            <span class="info-box-text">{% translate "Taux de réussite" %}</span>
                             <span class="info-box-number fs-4">{% if success_rate is None %}–{% else %}{{ success_rate }} %{% endif %}</span>
-                            <span class="small text-secondary">sur {{ recent_total }} révision{{ recent_total | pluralize }} en {{ success_rate_days }} jours</span>
+                            <span class="small text-secondary">{% blocktranslate with days=success_rate_days count counter=recent_total %}sur {{ counter }} révision en {{ days }} jours{% plural %}sur {{ counter }} révisions en {{ days }} jours{% endblocktranslate %}</span>
                         </div>
                     </div>
                 </div>
@@ -51,9 +52,9 @@
                     <div class="info-box mb-0 h-100">
                         <span class="info-box-icon text-bg-primary shadow-sm"><i class="bi bi-trophy"></i></span>
                         <div class="info-box-content">
-                            <span class="info-box-text">Cartes maîtrisées</span>
+                            <span class="info-box-text">{% translate "Cartes maîtrisées" %}</span>
                             <span class="info-box-number fs-4">{{ mastered }}</span>
-                            <span class="small text-secondary">en boîte 5, sur {{ card_total }} carte{{ card_total | pluralize }}</span>
+                            <span class="small text-secondary">{% blocktranslate count counter=card_total %}en boîte 5, sur {{ counter }} carte{% plural %}en boîte 5, sur {{ counter }} cartes{% endblocktranslate %}</span>
                         </div>
                     </div>
                 </div>
@@ -65,12 +66,12 @@
         <div class="col-xl-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <h3 class="card-title">Révisions des {{ daily | length }} derniers jours</h3>
+                    <h3 class="card-title">{% blocktranslate with days=daily|length %}Révisions des {{ days }} derniers jours{% endblocktranslate %}</h3>
                 </div>
                 <div class="card-body">
                     {% if daily_total %}
                         <div class="chart" role="img"
-                             aria-label="Nombre de révisions par jour sur les {{ daily | length }} derniers jours, {{ daily_total }} au total. Détail dans le tableau ci-dessous.">
+                             aria-label="{% blocktranslate with days=daily|length total=daily_total %}Nombre de révisions par jour sur les {{ days }} derniers jours, {{ total }} au total. Détail dans le tableau ci-dessous.{% endblocktranslate %}">
                             {% for day in daily %}
                                 <div class="chart-column" tabindex="0">
                                     <div class="chart-bar" style="height: {{ day.height }}%">
@@ -79,8 +80,9 @@
                                         {% endif %}
                                     </div>
                                     <span class="chart-tooltip">
-                                        {{ day.date | date:"l j F" }} : {{ day.total }} révision{{ day.total | pluralize }},
-                                        {{ day.solved }} réussie{{ day.solved | pluralize }}
+                                        {{ day.date | date:"l j F" }} :
+                                        {% blocktranslate count counter=day.total %}{{ counter }} révision{% plural %}{{ counter }} révisions{% endblocktranslate %},
+                                        {% blocktranslate count counter=day.solved %}{{ counter }} réussie{% plural %}{{ counter }} réussies{% endblocktranslate %}
                                     </span>
                                 </div>
                             {% endfor %}
@@ -91,11 +93,11 @@
                             {% endfor %}
                         </div>
                         <details>
-                            <summary class="small">Voir le tableau</summary>
+                            <summary class="small">{% translate "Voir le tableau" %}</summary>
                             <div class="table-responsive mt-2">
                                 <table class="table table-sm small mb-0">
                                     <thead>
-                                        <tr><th>Jour</th><th class="text-end">Révisions</th><th class="text-end">Réussies</th></tr>
+                                        <tr><th>{% translate "Jour" %}</th><th class="text-end">{% translate "Révisions" %}</th><th class="text-end">{% translate "Réussies" %}</th></tr>
                                     </thead>
                                     <tbody>
                                         {% for day in daily %}
@@ -110,7 +112,7 @@
                             </div>
                         </details>
                     {% else %}
-                        <p class="text-secondary mb-0">Aucune révision ces {{ daily | length }} derniers jours.</p>
+                        <p class="text-secondary mb-0">{% blocktranslate with days=daily|length %}Aucune révision ces {{ days }} derniers jours.{% endblocktranslate %}</p>
                     {% endif %}
                 </div>
             </div>
@@ -118,7 +120,7 @@
         <div class="col-xl-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <h3 class="card-title">Progression par paquet</h3>
+                    <h3 class="card-title">{% translate "Progression par paquet" %}</h3>
                 </div>
                 {% if decks %}
                     <div class="card-body p-0">
@@ -126,17 +128,20 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Paquet</th>
+                                        <th>{% translate "Paquet" %}</th>
                                         {% for box in boxes %}
-                                            <th class="text-center"><span class="badge box-swatch box-{{ box }}" title="Boîte {{ box }}">{{ box }}</span></th>
+                                            <th class="text-center"><span class="badge box-swatch box-{{ box }}" title="{% blocktranslate with number=box %}Boîte {{ number }}{% endblocktranslate %}">{{ box }}</span></th>
                                         {% endfor %}
-                                        <th class="text-end">À réviser</th>
+                                        <th class="text-end">{% translate "À réviser" %}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for deck in decks %}
                                         <tr>
-                                            <td><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></td>
+                                            <td>
+                                                {% include "cards/flag.html" with code=deck.flag label=deck.get_language_display class="me-1" %}
+                                                <a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a>
+                                            </td>
                                             {% for count in deck.box_counts %}<td class="text-center">{{ count }}</td>{% endfor %}
                                             <td class="text-end"><a href="{% url 'study' deck.pk %}" class="badge text-bg-warning text-decoration-none">{{ deck.due_count }}</a></td>
                                         </tr>
@@ -145,9 +150,9 @@
                             </table>
                         </div>
                     </div>
-                    <div class="card-footer small text-secondary">Les colonnes 1 à 5 sont les boîtes de Leitner : la boîte 5 contient les cartes maîtrisées.</div>
+                    <div class="card-footer small text-secondary">{% translate "Les colonnes 1 à 5 sont les boîtes de Leitner : la boîte 5 contient les cartes maîtrisées." %}</div>
                 {% else %}
-                    <div class="card-body"><p class="text-secondary mb-0">Vous n'avez pas encore de paquet.</p></div>
+                    <div class="card-body"><p class="text-secondary mb-0">{% translate "Vous n'avez pas encore de paquet." %}</p></div>
                 {% endif %}
             </div>
         </div>

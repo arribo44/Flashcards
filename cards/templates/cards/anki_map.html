@@ -1,26 +1,29 @@
 <!-- cards/templates/cards/anki_map.html -->
 
 {% extends "cards/base.html" %}
-{% load crispy_forms_tags %}
+{% load i18n crispy_forms_tags %}
 
-{% block title %}Choisir les champs{% endblock %}
-{% block page_title %}<i class="bi bi-box-seam me-2 text-primary"></i>Choisir les champs{% endblock %}
+{% block title %}{% translate "Choisir les champs" %}{% endblock %}
+{% block page_title %}<i class="bi bi-box-seam me-2 text-primary"></i>{% translate "Choisir les champs" %}{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'anki-upload' deck.pk %}">Importer Anki</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Champs</li>
+    <li class="breadcrumb-item"><a href="{% url 'anki-upload' deck.pk %}">{% translate "Importer Anki" %}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Champs" %}</li>
 {% endblock %}
 
 {% block content %}
     <div class="alert alert-info d-flex flex-wrap align-items-center gap-2">
         <i class="bi bi-file-earmark-zip fs-5"></i>
-        <span>« {{ file_name }} » : <strong>{{ note_type.notes | length }} note{{ note_type.notes | length | pluralize }}</strong>
-        de type « {{ note_type.name }} ».</span>
+        <span>{% blocktranslate trimmed with file=file_name type=note_type.name count counter=note_type.notes|length %}
+            « {{ file }} » : <strong>{{ counter }} note</strong> de type « {{ type }} ».
+        {% plural %}
+            « {{ file }} » : <strong>{{ counter }} notes</strong> de type « {{ type }} ».
+        {% endblocktranslate %}</span>
     </div>
 
     {% if note_types|length > 1 %}
         <div class="mb-3">
-            <span class="me-2">Ce paquet contient plusieurs types de notes. Type à importer :</span>
+            <span class="me-2">{% translate "Ce paquet contient plusieurs types de notes. Type à importer :" %}</span>
             <div class="btn-group btn-group-sm flex-wrap">
                 {% for nt in note_types %}
                     <a href="?note_type={{ nt.id }}" class="btn {% if nt.id == note_type.id %}btn-primary active{% else %}btn-outline-primary{% endif %}">
@@ -35,7 +38,7 @@
         <div class="col-xl-5 order-xl-2">
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><span class="badge text-bg-primary me-2">2</span>Correspondance</h3>
+                    <h3 class="card-title"><span class="badge text-bg-primary me-2">2</span>{% translate "Correspondance" %}</h3>
                 </div>
                 <form method="post">
                     <div class="card-body">
@@ -43,15 +46,17 @@
                         <input type="hidden" name="note_type" value="{{ note_type.id }}">
                         {{ form|crispy }}
                         <p class="small text-secondary mb-0">
-                            Les cartes arrivent en boîte 1. Sont ignorées les notes dont la
-                            question existe déjà dans le paquet, ou dont la question ou la
-                            réponse est vide ou dépasse 200 caractères. Un exemple de plus de
-                            500 caractères est raccourci.
+                            {% blocktranslate trimmed %}
+                                Les cartes arrivent en boîte 1. Sont ignorées les notes dont la
+                                question existe déjà dans le paquet, ou dont la question ou la
+                                réponse est vide ou dépasse 200 caractères. Un exemple de plus de
+                                500 caractères est raccourci.
+                            {% endblocktranslate %}
                         </p>
                     </div>
                     <div class="card-footer d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-download me-1"></i> Importer les cartes</button>
-                        <a href="{% url 'anki-upload' deck.pk %}" class="btn btn-outline-secondary">Choisir un autre fichier</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-download me-1"></i> {% translate "Importer les cartes" %}</button>
+                        <a href="{% url 'anki-upload' deck.pk %}" class="btn btn-outline-secondary">{% translate "Choisir un autre fichier" %}</a>
                     </div>
                 </form>
             </div>
@@ -59,7 +64,7 @@
         <div class="col-xl-7 order-xl-1">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Aperçu des premières notes</h3>
+                    <h3 class="card-title">{% translate "Aperçu des premières notes" %}</h3>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">

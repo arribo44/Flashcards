@@ -160,11 +160,8 @@ function setUpTypedAnswer(answer) {
         event.preventDefault();
         const expected = form.dataset.expected;
         const result = checkAnswer(form.typed.value, expected);
-        verdict.textContent = {
-            correct: "✅ Correct !",
-            accents: `✅ Presque : attention aux accents (« ${expected} »).`,
-            wrong: `❌ La réponse attendue était « ${expected} ».`,
-        }[result];
+        // The messages come translated from the page, see review_card.html
+        verdict.textContent = verdict.dataset[result].replace("{expected}", expected);
         verdict.classList.add(
             { correct: "alert-success", accents: "alert-warning", wrong: "alert-danger" }[result]
         );
@@ -206,5 +203,36 @@ function setUpReview() {
     });
 }
 
+// Browsers label file inputs in their own language ("Parcourir…" in a French
+// browser, whatever the interface language): show our own translated button,
+// whose labels come from the <body> data attributes
+function setUpFileInputs() {
+    const { fileButton, fileEmpty } = document.body.dataset;
+    document.querySelectorAll("input[type=file]").forEach((input) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn btn-outline-secondary";
+        button.innerHTML = '<i class="bi bi-folder2-open me-1"></i>';
+        button.append(fileButton);
+        const fileName = document.createElement("span");
+        fileName.className = "form-control text-truncate text-secondary";
+        fileName.classList.toggle("is-invalid", input.classList.contains("is-invalid"));
+        fileName.textContent = fileEmpty;
+        const group = document.createElement("div");
+        group.className = "input-group";
+        group.append(button, fileName);
+        input.after(group);
+        input.classList.add("visually-hidden");
+        input.tabIndex = -1;
+        [button, fileName].forEach((element) => element.addEventListener("click", () => input.click()));
+        input.addEventListener("change", () => {
+            const file = input.files[0];
+            fileName.textContent = file ? file.name : fileEmpty;
+            fileName.classList.toggle("text-secondary", !file);
+        });
+    });
+}
+
 setUpSpeech();
 setUpReview();
+setUpFileInputs();

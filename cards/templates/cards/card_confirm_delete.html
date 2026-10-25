@@ -1,12 +1,13 @@
 <!-- cards/templates/cards/card_confirm_delete.html -->
 
 {% extends "cards/base.html" %}
+{% load i18n %}
 
-{% block title %}Supprimer la carte{% endblock %}
-{% block page_title %}Supprimer la carte{% endblock %}
+{% block title %}{% translate "Supprimer la carte" %}{% endblock %}
+{% block page_title %}{% translate "Supprimer la carte" %}{% endblock %}
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'card-list' deck.pk %}">{{ deck.name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Supprimer</li>
+    <li class="breadcrumb-item active" aria-current="page">{% translate "Supprimer" %}</li>
 {% endblock %}
 
 {% block content %}
@@ -17,14 +18,14 @@
                     <h4 class="mb-1">{{ card.question }}</h4>
                     <p class="mb-3">{{ card.answer }}</p>
                     <div class="alert alert-danger mb-0" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Cette suppression est définitive.
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> {% translate "Cette suppression est définitive." %}
                     </div>
                 </div>
                 <div class="card-footer">
                     <form method="post" class="d-flex gap-2">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Supprimer définitivement</button>
-                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> {% translate "Supprimer définitivement" %}</button>
+                        <a href="{% url 'card-list' deck.pk %}" class="btn btn-outline-secondary">{% translate "Annuler" %}</a>
                     </form>
                 </div>
             </div>
